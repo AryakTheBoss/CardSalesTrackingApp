@@ -23,7 +23,7 @@ export const Inventory = () => {
 
   return (
     <div className="animate-in">
-      <div className="flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="view-header flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 className="text-3xl font-bold">Inventory</h1>
           <p className="text-secondary mt-2">Manage your current collection</p>
@@ -34,7 +34,7 @@ export const Inventory = () => {
         </button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div className="glass-panel p-2" style={{ display: 'inline-flex', padding: '0.5rem' }}>
           <button 
             className={`glass-button ${activeTab === 'slab' ? 'bg-white/20' : 'border-transparent'}`} 

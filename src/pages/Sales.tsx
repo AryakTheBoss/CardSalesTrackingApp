@@ -36,7 +36,7 @@ export const Sales = () => {
 
   return (
     <div className="animate-in">
-      <div className="flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="view-header flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 className="text-3xl font-bold">Sales History</h1>
           <p className="text-secondary mt-2">Track your sold cards and profits</p>
@@ -70,8 +70,8 @@ export const Sales = () => {
           <button className="glass-button" onClick={() => setIsModalOpen(true)}>Log your first sale</button>
         </div>
       ) : (
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className="glass-panel table-responsive-wrapper">
+          <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
                 <th style={{ padding: '1rem' }}>Card</th>

@@ -141,6 +141,44 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0 auto;
 }
 
+/* Sidebar Styles (Desktop by default) */
+.sidebar {
+  width: 280px;
+}
+
+.sidebar-header {
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+}
+
+.sidebar-nav {
+  padding: 0 1.5rem;
+}
+
+.sidebar-footer {
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.nav-item {
+  display: flex;
+  text-decoration: none;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.nav-item.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item:hover:not(.active) {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -169,6 +207,8 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 500px;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-header {
@@ -200,3 +240,68 @@ h1, h2, h3, h4, h5, h6 {
 .mb-4 { margin-bottom: 1rem; }
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: auto;
+    margin: 1rem;
+    border-radius: var(--border-radius-md);
+  }
+
+  .sidebar-header {
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 0 0.5rem;
+    overflow-x: auto;
+    gap: 0.5rem;
+  }
+
+  .nav-item {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .nav-item span {
+    font-size: 1rem;
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    padding: 1rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  /* Responsive generic table */
+  .table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Flex wrap for header buttons in views */
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .view-header > div {
+    width: 100%;
+  }
+
+  .view-header > div:last-child {
+    flex-wrap: wrap;
+  }
+}

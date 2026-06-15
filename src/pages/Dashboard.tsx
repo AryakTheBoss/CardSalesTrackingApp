@@ -15,15 +15,15 @@ export const Dashboard = () => {
 
   return (
     <div className="animate-in">
-      <div className="flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div className="view-header flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-secondary mt-2">Overview of your collection's performance in {currentYear}</p>
         </div>
       </div>
 
-      <div className="flex-row gap-4 mb-8" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-        <div className="glass-panel p-6 flex-1" style={{ flex: 1, padding: '1.5rem' }}>
+      <div className="view-header flex-row gap-4 mb-8" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="glass-panel p-6 flex-1" style={{ flex: 1, padding: '1.5rem', minWidth: '200px' }}>
           <div className="flex-row items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="p-3 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.2)' }}>
               <TrendingUp className="text-success" size={24} />
@@ -38,7 +38,7 @@ export const Dashboard = () => {
         </div>
         
         {/* Placeholder for other stats */}
-        <div className="glass-panel p-6 flex-1" style={{ flex: 1, padding: '1.5rem' }}>
+        <div className="glass-panel p-6 flex-1" style={{ flex: 1, padding: '1.5rem', minWidth: '200px' }}>
           <div className="flex-row items-center gap-4" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="p-3 rounded-lg" style={{ background: 'rgba(139, 92, 246, 0.2)' }}>
               <DollarSign style={{ color: 'var(--accent-primary)' }} size={24} />
@@ -53,9 +53,9 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="glass-panel p-6" style={{ padding: '1.5rem' }}>
+      <div className="glass-panel p-6 table-responsive-wrapper" style={{ padding: '1.5rem' }}>
         <h3 className="text-xl font-bold mb-6">Monthly Profit</h3>
-        <div style={{ width: '100%', height: 400 }}>
+        <div style={{ width: '100%', minWidth: '600px', height: 400 }}>
           <ResponsiveContainer>
             <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <XAxis dataKey="month" stroke="var(--text-secondary)" />
