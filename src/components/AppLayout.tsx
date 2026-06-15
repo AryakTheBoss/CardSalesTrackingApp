@@ -1,7 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, WalletCards, BadgeDollarSign, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, WalletCards, BadgeDollarSign, RefreshCw, LogOut } from 'lucide-react';
 import React, { useState } from 'react';
 import { SyncDataModal } from './SyncDataModal';
+import { auth } from '../config/firebase';
 
 const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) => (
   <NavLink
@@ -45,7 +46,7 @@ export const AppLayout = () => {
           <NavItem to="/sales" icon={BadgeDollarSign} label="Sales" />
         </nav>
         
-        <div className="p-6 border-t" style={{ borderTop: '1px solid var(--glass-border)' }}>
+        <div className="p-6 border-t" style={{ borderTop: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <button 
             className="glass-button w-full flex-row justify-center items-center gap-2" 
             style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
@@ -53,6 +54,15 @@ export const AppLayout = () => {
           >
             <RefreshCw size={22} />
             Sync Excel
+          </button>
+
+          <button 
+            className="glass-button w-full flex-row justify-center items-center gap-2" 
+            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+            onClick={() => auth.signOut()}
+          >
+            <LogOut size={22} />
+            Sign Out
           </button>
         </div>
       </aside>
