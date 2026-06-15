@@ -8,8 +8,15 @@ export const Sales = () => {
   const inventory = useStore(state => state.inventory) || [];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortOption, setSortOption] = useState('date-desc');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const sortedSales = [...sales].sort((a, b) => {
+  const filteredSales = sales.filter(sale => {
+    const card = inventory.find(c => c.id === sale.cardId);
+    if (!card) return false;
+    return card.name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const sortedSales = [...filteredSales].sort((a, b) => {
     if (sortOption === 'date-desc') return new Date(b.date).getTime() - new Date(a.date).getTime();
     if (sortOption === 'date-asc') return new Date(a.date).getTime() - new Date(b.date).getTime();
     
@@ -41,7 +48,15 @@ export const Sales = () => {
           <h1 className="text-3xl font-bold">Sales History</h1>
           <p className="text-secondary mt-2">Track your sold cards and profits</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            className="glass-input"
+            placeholder="Search by card name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ minWidth: '200px', flex: 1 }}
+          />
           <select 
             className="glass-input" 
             style={{ width: 'auto', background: '#1e1b4b', appearance: 'auto', padding: '0.5rem 1rem', height: 'fit-content' }}
@@ -64,10 +79,10 @@ export const Sales = () => {
         </div>
       </div>
 
-      {sales.length === 0 ? (
+      {filteredSales.length === 0 ? (
         <div className="glass-panel p-12 text-center" style={{ padding: '3rem', textAlign: 'center' }}>
-          <p className="text-secondary mb-4">No sales logged yet.</p>
-          <button className="glass-button" onClick={() => setIsModalOpen(true)}>Log your first sale</button>
+          <p className="text-secondary mb-4">{sales.length === 0 ? "No sales logged yet." : "No matching sales found."}</p>
+          {sales.length === 0 && <button className="glass-button" onClick={() => setIsModalOpen(true)}>Log your first sale</button>}
         </div>
       ) : (
         <div className="glass-panel table-responsive-wrapper">

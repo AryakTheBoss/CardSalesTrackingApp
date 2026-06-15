@@ -10,8 +10,13 @@ export const Inventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredInventory = inventory.filter(card => card.type === activeTab && card.status === 'in-stock');
+  const filteredInventory = inventory.filter(card => {
+    const matchesTab = card.type === activeTab && card.status === 'in-stock';
+    const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   const sortedInventory = [...filteredInventory].sort((a, b) => {
     if (sortOption === 'date-desc') return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
@@ -52,17 +57,27 @@ export const Inventory = () => {
           </button>
         </div>
 
-        <select 
-          className="glass-input" 
-          style={{ width: 'auto', background: '#1e1b4b', appearance: 'auto', padding: '0.5rem 1rem' }}
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="date-desc">Newest Added</option>
-          <option value="date-asc">Oldest Added</option>
-          <option value="price-desc">Highest Price</option>
-          <option value="price-asc">Lowest Price</option>
-        </select>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            className="glass-input"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ minWidth: '200px', flex: 1 }}
+          />
+          <select 
+            className="glass-input" 
+            style={{ width: 'auto', background: '#1e1b4b', appearance: 'auto', padding: '0.5rem 1rem' }}
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <option value="date-desc">Newest Added</option>
+            <option value="date-asc">Oldest Added</option>
+            <option value="price-desc">Highest Price</option>
+            <option value="price-asc">Lowest Price</option>
+          </select>
+        </div>
       </div>
 
       {filteredInventory.length === 0 ? (

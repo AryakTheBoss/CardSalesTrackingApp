@@ -69,25 +69,23 @@ export const AddCardModal = ({ onClose }: Props) => {
 
           <div className="form-group">
             <label>Card Type</label>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="raw" 
-                  checked={type === 'raw'} 
-                  onChange={() => setType('raw')} 
-                /> Raw
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="slab" 
-                  checked={type === 'slab'} 
-                  onChange={() => setType('slab')} 
-                /> Slab (Graded)
-              </label>
+            <div className="glass-panel p-2" style={{ display: 'flex', padding: '0.5rem', gap: '0.5rem' }}>
+              <button 
+                type="button"
+                className={`glass-button ${type === 'raw' ? 'bg-white/20' : 'border-transparent'}`} 
+                style={{ border: type === 'raw' ? '' : 'none', flex: 1, background: type === 'raw' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+                onClick={() => setType('raw')}
+              >
+                Raw Card
+              </button>
+              <button 
+                type="button"
+                className={`glass-button ${type === 'slab' ? 'bg-white/20' : 'border-transparent'}`} 
+                style={{ border: type === 'slab' ? '' : 'none', flex: 1, background: type === 'slab' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+                onClick={() => setType('slab')}
+              >
+                Slab (Graded)
+              </button>
             </div>
           </div>
 
