@@ -1,73 +1,33 @@
-# React + TypeScript + Vite
+# Apex Collects - Pokémon Card Inventory & Sales Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web application for tracking Pokémon card inventory and sales. Designed specifically for collectors and sellers, this app helps you manage your graded slabs and raw cards, track your profits over time, and keep your data synced.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Dashboard**: Track your overall profits year-to-date with a responsive bar chart.
+- **Inventory Management**: Separate tabs for Graded Slabs and Raw Cards. Includes support for logging grading companies (PSA, CGC, BGS, TAG) and raw card conditions (NM, LP, MP, HP, DMG).
+- **Sales Tracking**: Easily move items from your inventory into sales, automatically calculating your profit margins.
+- **Excel Sync**: Upload your master `.xlsx` spreadsheet to instantly sync your Slabs Inventory, Raw Inventory, and All-Time Sold data straight into the application.
+- **Local Persistence**: All data is securely saved in your browser's local storage.
 
-## React Compiler
+## Tech Stack
+- React
+- Vite
+- Zustand (State Management)
+- Recharts (Data Visualization)
+- SheetJS (Excel Parsing)
+- Lucide React (Icons)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local Development
 
-## Expanding the ESLint configuration
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Deployment
+This project is configured to be automatically deployed to GitHub Pages via GitHub Actions whenever changes are pushed to the `main` branch.
