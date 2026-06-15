@@ -40,20 +40,27 @@ export const Inventory = () => {
       </div>
 
       <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div className="glass-panel p-2" style={{ display: 'inline-flex', padding: '0.5rem' }}>
+        <div className="glass-panel p-2" style={{ display: 'inline-flex', padding: '0.5rem', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
             className={`glass-button ${activeTab === 'slab' ? 'bg-white/20' : 'border-transparent'}`} 
-            style={{ border: activeTab === 'slab' ? '' : 'none' }}
+            style={{ border: activeTab === 'slab' ? '' : 'none', background: activeTab === 'slab' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
             onClick={() => setActiveTab('slab')}
           >
             Slabs (Graded)
           </button>
           <button 
             className={`glass-button ${activeTab === 'raw' ? 'bg-white/20' : 'border-transparent'}`} 
-            style={{ border: activeTab === 'raw' ? '' : 'none' }}
+            style={{ border: activeTab === 'raw' ? '' : 'none', background: activeTab === 'raw' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
             onClick={() => setActiveTab('raw')}
           >
             Raw Cards
+          </button>
+          <button 
+            className={`glass-button ${activeTab === 'sealed' ? 'bg-white/20' : 'border-transparent'}`} 
+            style={{ border: activeTab === 'sealed' ? '' : 'none', background: activeTab === 'sealed' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+            onClick={() => setActiveTab('sealed')}
+          >
+            Sealed Products
           </button>
         </div>
 

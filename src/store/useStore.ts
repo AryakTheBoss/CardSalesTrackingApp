@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { db } from '../config/firebase';
-import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, deleteField } from 'firebase/firestore';
 
-export type CardType = 'slab' | 'raw';
+export type CardType = 'slab' | 'raw' | 'sealed';
 export type CardStatus = 'in-stock' | 'sold';
 
 export interface Card {
@@ -78,7 +78,14 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   updateCard: async (id, cardData) => {
-    await updateDoc(doc(db, 'inventory', id), cardData);
+    // Convert undefined values to deleteField() for Firestore
+    const sanitizedData = { ...cardData } as any;
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        sanitizedData[key] = deleteField();
+      }
+    });
+    await updateDoc(doc(db, 'inventory', id), sanitizedData);
   },
 
   deleteCard: async (id) => {

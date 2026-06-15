@@ -29,7 +29,8 @@ export const EditCardModal = ({ card, onClose }: Props) => {
       type,
       notes,
       ...(type === 'slab' ? { gradingCompany, grade, condition: undefined } : {}),
-      ...(type === 'raw' ? { condition, gradingCompany: undefined, grade: undefined } : {})
+      ...(type === 'raw' ? { condition, gradingCompany: undefined, grade: undefined } : {}),
+      ...(type === 'sealed' ? { condition: undefined, gradingCompany: undefined, grade: undefined } : {})
     });
     onClose();
   };
@@ -79,7 +80,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
 
           <div className="form-group">
             <label>Card Type</label>
-            <div className="glass-panel p-2" style={{ display: 'flex', padding: '0.5rem', gap: '0.5rem' }}>
+            <div className="glass-panel p-2" style={{ display: 'flex', padding: '0.5rem', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button 
                 type="button"
                 className={`glass-button ${type === 'raw' ? 'bg-white/20' : 'border-transparent'}`} 
@@ -95,6 +96,14 @@ export const EditCardModal = ({ card, onClose }: Props) => {
                 onClick={() => setType('slab')}
               >
                 Slab (Graded)
+              </button>
+              <button 
+                type="button"
+                className={`glass-button ${type === 'sealed' ? 'bg-white/20' : 'border-transparent'}`} 
+                style={{ border: type === 'sealed' ? '' : 'none', flex: 1, background: type === 'sealed' ? 'rgba(255,255,255,0.1)' : 'transparent' }}
+                onClick={() => setType('sealed')}
+              >
+                Sealed
               </button>
             </div>
           </div>
