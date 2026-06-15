@@ -7,6 +7,32 @@ export const Sales = () => {
   const sales = useStore(state => state.sales) || [];
   const inventory = useStore(state => state.inventory) || [];
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sortOption, setSortOption] = useState('date-desc');
+
+  const sortedSales = [...sales].sort((a, b) => {
+    if (sortOption === 'date-desc') return new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (sortOption === 'date-asc') return new Date(a.date).getTime() - new Date(b.date).getTime();
+    
+    if (sortOption === 'sale-desc') return b.soldPrice - a.soldPrice;
+    if (sortOption === 'sale-asc') return a.soldPrice - b.soldPrice;
+    
+    const cardA = inventory.find(c => c.id === a.cardId);
+    const cardB = inventory.find(c => c.id === b.cardId);
+    
+    const buyA = cardA ? cardA.pricePaid : 0;
+    const buyB = cardB ? cardB.pricePaid : 0;
+    
+    if (sortOption === 'buy-desc') return buyB - buyA;
+    if (sortOption === 'buy-asc') return buyA - buyB;
+    
+    const profitA = a.soldPrice - buyA;
+    const profitB = b.soldPrice - buyB;
+    
+    if (sortOption === 'profit-desc') return profitB - profitA;
+    if (sortOption === 'profit-asc') return profitA - profitB;
+    
+    return 0;
+  });
 
   return (
     <div className="animate-in">
@@ -15,10 +41,27 @@ export const Sales = () => {
           <h1 className="text-3xl font-bold">Sales History</h1>
           <p className="text-secondary mt-2">Track your sold cards and profits</p>
         </div>
-        <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={20} />
-          Log Sale
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <select 
+            className="glass-input" 
+            style={{ width: 'auto', background: '#1e1b4b', appearance: 'auto', padding: '0.5rem 1rem', height: 'fit-content' }}
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <option value="date-desc">Newest Sold</option>
+            <option value="date-asc">Oldest Sold</option>
+            <option value="profit-desc">Highest Profit</option>
+            <option value="profit-asc">Lowest Profit</option>
+            <option value="sale-desc">Highest Sale Price</option>
+            <option value="sale-asc">Lowest Sale Price</option>
+            <option value="buy-desc">Highest Buy Price</option>
+            <option value="buy-asc">Lowest Buy Price</option>
+          </select>
+          <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={20} />
+            Log Sale
+          </button>
+        </div>
       </div>
 
       {sales.length === 0 ? (
@@ -39,7 +82,7 @@ export const Sales = () => {
               </tr>
             </thead>
             <tbody>
-              {sales.map(sale => {
+              {sortedSales.map(sale => {
                 const card = inventory.find(c => c.id === sale.cardId);
                 const profit = card ? sale.soldPrice - card.pricePaid : 0;
                 

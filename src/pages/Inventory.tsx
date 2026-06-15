@@ -9,8 +9,17 @@ export const Inventory = () => {
   const [activeTab, setActiveTab] = useState<CardType>('slab');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [sortOption, setSortOption] = useState('date-desc');
 
   const filteredInventory = inventory.filter(card => card.type === activeTab && card.status === 'in-stock');
+
+  const sortedInventory = [...filteredInventory].sort((a, b) => {
+    if (sortOption === 'date-desc') return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+    if (sortOption === 'date-asc') return new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+    if (sortOption === 'price-desc') return b.pricePaid - a.pricePaid;
+    if (sortOption === 'price-asc') return a.pricePaid - b.pricePaid;
+    return 0;
+  });
 
   return (
     <div className="animate-in">
@@ -25,21 +34,35 @@ export const Inventory = () => {
         </button>
       </div>
 
-      <div className="glass-panel p-2 mb-6" style={{ display: 'inline-flex', padding: '0.5rem', marginBottom: '1.5rem' }}>
-        <button 
-          className={`glass-button ${activeTab === 'slab' ? 'bg-white/20' : 'border-transparent'}`} 
-          style={{ border: activeTab === 'slab' ? '' : 'none' }}
-          onClick={() => setActiveTab('slab')}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className="glass-panel p-2" style={{ display: 'inline-flex', padding: '0.5rem' }}>
+          <button 
+            className={`glass-button ${activeTab === 'slab' ? 'bg-white/20' : 'border-transparent'}`} 
+            style={{ border: activeTab === 'slab' ? '' : 'none' }}
+            onClick={() => setActiveTab('slab')}
+          >
+            Slabs (Graded)
+          </button>
+          <button 
+            className={`glass-button ${activeTab === 'raw' ? 'bg-white/20' : 'border-transparent'}`} 
+            style={{ border: activeTab === 'raw' ? '' : 'none' }}
+            onClick={() => setActiveTab('raw')}
+          >
+            Raw Cards
+          </button>
+        </div>
+
+        <select 
+          className="glass-input" 
+          style={{ width: 'auto', background: '#1e1b4b', appearance: 'auto', padding: '0.5rem 1rem' }}
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
         >
-          Slabs (Graded)
-        </button>
-        <button 
-          className={`glass-button ${activeTab === 'raw' ? 'bg-white/20' : 'border-transparent'}`} 
-          style={{ border: activeTab === 'raw' ? '' : 'none' }}
-          onClick={() => setActiveTab('raw')}
-        >
-          Raw Cards
-        </button>
+          <option value="date-desc">Newest Added</option>
+          <option value="date-asc">Oldest Added</option>
+          <option value="price-desc">Highest Price</option>
+          <option value="price-asc">Lowest Price</option>
+        </select>
       </div>
 
       {filteredInventory.length === 0 ? (
@@ -49,7 +72,7 @@ export const Inventory = () => {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
-          {filteredInventory.map(card => (
+          {sortedInventory.map(card => (
             <div 
               key={card.id} 
               className="glass-panel p-3" 
