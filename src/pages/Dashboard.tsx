@@ -4,10 +4,12 @@ import { useStore } from '../store/useStore';
 import { TrendingUp, DollarSign } from 'lucide-react';
 
 export const Dashboard = () => {
+  const sales = useStore(state => state.sales);
+  const inventory = useStore(state => state.inventory);
   const getProfitByMonth = useStore(state => state.getProfitByMonth);
   const currentYear = new Date().getFullYear();
   
-  const data = useMemo(() => getProfitByMonth(currentYear), [getProfitByMonth, currentYear]);
+  const data = useMemo(() => getProfitByMonth(currentYear), [getProfitByMonth, currentYear, sales, inventory]);
   
   const totalProfit = data.reduce((sum, item) => sum + item.profit, 0);
 
