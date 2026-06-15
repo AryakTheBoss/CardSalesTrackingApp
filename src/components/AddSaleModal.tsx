@@ -11,10 +11,27 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const addSale = useStore(state => state.addSale);
   
   const [cardId, setCardId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
   const [soldPrice, setSoldPrice] = useState('');
   const [notes, setNotes] = useState('');
 
   const availableCards = inventory.filter(c => c.status === 'in-stock');
+  const filteredCards = availableCards.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSelectCard = (card: any) => {
+    setCardId(card.id);
+    setSearchQuery(card.name);
+    setIsOpen(false);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCardId('');
+    setIsOpen(true);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,22 +56,63 @@ export const AddSaleModal = ({ onClose }: Props) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Select Card</label>
-            <select 
+          <div className="form-group" style={{ position: 'relative' }}>
+            <label>Search & Select Card</label>
+            <input 
+              type="text" 
               className="glass-input" 
-              value={cardId}
-              onChange={e => setCardId(e.target.value)}
+              placeholder="Start typing to search..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => setIsOpen(true)}
+              onBlur={() => setTimeout(() => setIsOpen(false), 200)}
               required
-              style={{ appearance: 'auto', background: '#1e1b4b' }}
-            >
-              <option value="" disabled>Select a card from inventory...</option>
-              {availableCards.map(card => (
-                <option key={card.id} value={card.id}>
-                  {card.name} (Paid: ${card.pricePaid})
-                </option>
-              ))}
-            </select>
+            />
+            {isOpen && (
+              <div 
+                className="glass-panel" 
+                style={{ 
+                  position: 'absolute', 
+                  top: '100%', 
+                  left: 0, 
+                  right: 0, 
+                  maxHeight: '200px', 
+                  overflowY: 'auto', 
+                  zIndex: 50,
+                  marginTop: '0.25rem',
+                  background: '#1e1b4b',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                }}
+              >
+                {filteredCards.length > 0 ? (
+                  filteredCards.map(card => (
+                    <div 
+                      key={card.id} 
+                      onClick={() => handleSelectCard(card)}
+                      style={{ 
+                        padding: '0.75rem 1rem', 
+                        cursor: 'pointer',
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                      onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div className="font-medium">{card.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        Paid: ${card.pricePaid.toFixed(2)} 
+                        {card.type === 'slab' && (card.gradingCompany || card.grade) ? ` • ${card.gradingCompany} ${card.grade}` : ''}
+                        {card.type === 'raw' && card.condition ? ` • ${card.condition}` : ''}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '1rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    No matching cards found.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
