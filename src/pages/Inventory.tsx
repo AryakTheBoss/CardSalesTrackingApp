@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { useStore, type CardType } from '../store/useStore';
+import { useStore, type CardType, type Card } from '../store/useStore';
 import { Plus } from 'lucide-react';
 import { AddCardModal } from '../components/AddCardModal';
+import { EditCardModal } from '../components/EditCardModal';
 
 export const Inventory = () => {
   const inventory = useStore(state => state.inventory) || [];
   const [activeTab, setActiveTab] = useState<CardType>('slab');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const filteredInventory = inventory.filter(card => card.type === activeTab && card.status === 'in-stock');
 
@@ -46,33 +48,40 @@ export const Inventory = () => {
           <button className="glass-button" onClick={() => setIsModalOpen(true)}>Add your first card</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
           {filteredInventory.map(card => (
-            <div key={card.id} className="glass-panel p-5" style={{ padding: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <h3 className="font-bold text-lg">{card.name}</h3>
-                <span className="text-success font-semibold">${card.pricePaid.toFixed(2)}</span>
+            <div 
+              key={card.id} 
+              className="glass-panel p-3" 
+              style={{ padding: '0.75rem', cursor: 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => setSelectedCard(card)}
+              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <h3 className="font-bold text-base" style={{ flex: 1, marginRight: '0.5rem', lineHeight: '1.2' }}>{card.name}</h3>
+                <span className="text-success font-semibold text-sm">${card.pricePaid.toFixed(2)}</span>
               </div>
               {card.type === 'slab' && (card.gradingCompany || card.grade) && (
-                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.25rem 0.5rem', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
                   {card.gradingCompany} {card.grade}
                 </div>
               )}
               {card.type === 'raw' && card.condition && (
-                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.25rem 0.5rem', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--success)' }}>
                   Condition: {card.condition}
                 </div>
               )}
-              <p className="text-sm text-secondary mb-4">{card.notes || 'No notes.'}</p>
-              <div className="text-xs text-muted">
-                Added: {new Date(card.dateAdded).toLocaleDateString()}
-              </div>
+              <p className="text-xs text-secondary" style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {card.notes || 'No notes.'}
+              </p>
             </div>
           ))}
         </div>
       )}
 
       {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} />}
+      {selectedCard && <EditCardModal card={selectedCard} onClose={() => setSelectedCard(null)} />}
     </div>
   );
 };

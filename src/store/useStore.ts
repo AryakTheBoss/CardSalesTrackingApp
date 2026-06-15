@@ -30,7 +30,9 @@ interface AppState {
   inventory: Card[];
   sales: Sale[];
   addCard: (card: Omit<Card, 'id' | 'status' | 'dateAdded'>) => void;
-  addSale: (sale: Omit<Sale, 'id' | 'date'>) => void;
+  updateCard: (id: string, cardData: Partial<Card>) => void;
+  deleteCard: (id: string) => void;
+  addSale: (sale: Omit<Sale, 'id' | 'date'> & { date?: string }) => void;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => void;
   getProfitByMonth: (year: number) => { month: string; profit: number }[];
 }
@@ -59,11 +61,20 @@ export const useStore = create<AppState>()(
           }
         ]
       })),
+      updateCard: (id, cardData) => set((state) => ({
+        inventory: state.inventory.map(card => 
+          card.id === id ? { ...card, ...cardData } : card
+        )
+      })),
+      deleteCard: (id) => set((state) => ({
+        inventory: state.inventory.filter(card => card.id !== id),
+        sales: state.sales.filter(sale => sale.cardId !== id) // Remove associated sales if card is deleted
+      })),
       addSale: (sale) => set((state) => {
         const newSale: Sale = {
           ...sale,
           id: generateId(),
-          date: new Date().toISOString(),
+          date: sale.date ? new Date(sale.date).toISOString() : new Date().toISOString(),
         };
         
         return {

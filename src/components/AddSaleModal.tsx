@@ -14,6 +14,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [soldPrice, setSoldPrice] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
 
   const availableCards = inventory.filter(c => c.status === 'in-stock');
@@ -40,6 +41,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
     addSale({
       cardId,
       soldPrice: parseFloat(soldPrice),
+      date: new Date(date).toISOString(),
       notes
     });
     onClose();
@@ -124,6 +126,17 @@ export const AddSaleModal = ({ onClose }: Props) => {
               placeholder="0.00"
               value={soldPrice}
               onChange={e => setSoldPrice(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Sale Date</label>
+            <input 
+              type="date" 
+              className="glass-input" 
+              value={date}
+              onChange={e => setDate(e.target.value)}
               required
             />
           </div>
