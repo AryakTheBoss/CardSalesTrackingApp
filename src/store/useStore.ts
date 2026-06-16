@@ -30,6 +30,8 @@ interface AppState {
   inventory: Card[];
   sales: Sale[];
   isFirebaseInitialized: boolean;
+  isGuest: boolean;
+  setIsGuest: (isGuest: boolean) => void;
   initializeFirebaseListeners: () => () => void;
   addCard: (card: Omit<Card, 'id' | 'status' | 'dateAdded'>) => Promise<void>;
   updateCard: (id: string, cardData: Partial<Card>) => Promise<void>;
@@ -51,6 +53,9 @@ export const useStore = create<AppState>()((set, get) => ({
   inventory: [],
   sales: [],
   isFirebaseInitialized: false,
+  isGuest: false,
+
+  setIsGuest: (isGuest) => set({ isGuest }),
 
   initializeFirebaseListeners: () => {
     const unsubInventory = onSnapshot(collection(db, 'inventory'), (snapshot) => {

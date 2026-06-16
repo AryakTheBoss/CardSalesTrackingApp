@@ -3,6 +3,7 @@ import { LayoutDashboard, WalletCards, BadgeDollarSign, RefreshCw, LogOut } from
 import React, { useState } from 'react';
 import { SyncDataModal } from './SyncDataModal';
 import { auth } from '../config/firebase';
+import { useStore } from '../store/useStore';
 
 const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) => (
   <NavLink
@@ -21,6 +22,7 @@ const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementTyp
 
 export const AppLayout = () => {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const isGuest = useStore(state => state.isGuest);
 
   return (
     <div className="app-container">
@@ -38,15 +40,16 @@ export const AppLayout = () => {
         </nav>
 
         <div className="sidebar-footer border-t" style={{ borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '1rem' }}>
-          <button
-            className="glass-button w-full flex-row justify-center items-center gap-2"
-            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
-            onClick={() => setIsSyncModalOpen(true)}
-            disabled={true}
-          >
-            <RefreshCw size={22} />
-            Sync Excel
-          </button>
+          {!isGuest && (
+            <button
+              className="glass-button w-full flex-row justify-center items-center gap-2"
+              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
+              onClick={() => setIsSyncModalOpen(true)}
+            >
+              <RefreshCw size={22} />
+              Sync Excel
+            </button>
+          )}
 
           <button
             className="glass-button w-full flex-row justify-center items-center gap-2"

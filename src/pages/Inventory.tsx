@@ -6,6 +6,7 @@ import { EditCardModal } from '../components/EditCardModal';
 
 export const Inventory = () => {
   const inventory = useStore(state => state.inventory) || [];
+  const isGuest = useStore(state => state.isGuest);
   const [activeTab, setActiveTab] = useState<CardType>('slab');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
@@ -33,10 +34,12 @@ export const Inventory = () => {
           <h1 className="text-3xl font-bold">Inventory</h1>
           <p className="text-secondary mt-2">Manage your current collection</p>
         </div>
-        <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={20} />
-          Add Card
-        </button>
+        {!isGuest && (
+          <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={20} />
+            Add Card
+          </button>
+        )}
       </div>
 
       <div className="view-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -90,7 +93,7 @@ export const Inventory = () => {
       {filteredInventory.length === 0 ? (
         <div className="glass-panel p-12 text-center" style={{ padding: '3rem', textAlign: 'center' }}>
           <p className="text-secondary mb-4">No {activeTab} cards in inventory.</p>
-          <button className="glass-button" onClick={() => setIsModalOpen(true)}>Add your first card</button>
+          {!isGuest && <button className="glass-button" onClick={() => setIsModalOpen(true)}>Add your first card</button>}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
@@ -98,9 +101,11 @@ export const Inventory = () => {
             <div 
               key={card.id} 
               className="glass-panel p-3" 
-              style={{ padding: '0.75rem', cursor: 'pointer', transition: 'transform 0.2s' }}
-              onClick={() => setSelectedCard(card)}
-              onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+              style={{ padding: '0.75rem', cursor: isGuest ? 'default' : 'pointer', transition: 'transform 0.2s' }}
+              onClick={() => {
+                if (!isGuest) setSelectedCard(card);
+              }}
+              onMouseOver={e => { if (!isGuest) e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>

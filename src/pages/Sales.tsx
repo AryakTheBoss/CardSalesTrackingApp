@@ -8,6 +8,7 @@ export const Sales = () => {
   const sales = useStore(state => state.sales) || [];
   const inventory = useStore(state => state.inventory) || [];
   const deleteSale = useStore(state => state.deleteSale);
+  const isGuest = useStore(state => state.isGuest);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
@@ -81,17 +82,19 @@ export const Sales = () => {
             <option value="buy-desc">Highest Buy Price</option>
             <option value="buy-asc">Lowest Buy Price</option>
           </select>
-          <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={20} />
-            Log Sale
-          </button>
+          {!isGuest && (
+            <button className="glass-button primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={20} />
+              Log Sale
+            </button>
+          )}
         </div>
       </div>
 
       {filteredSales.length === 0 ? (
         <div className="glass-panel p-12 text-center" style={{ padding: '3rem', textAlign: 'center' }}>
           <p className="text-secondary mb-4">{sales.length === 0 ? "No sales logged yet." : "No matching sales found."}</p>
-          {sales.length === 0 && <button className="glass-button" onClick={() => setIsModalOpen(true)}>Log your first sale</button>}
+          {sales.length === 0 && !isGuest && <button className="glass-button" onClick={() => setIsModalOpen(true)}>Log your first sale</button>}
         </div>
       ) : (
         <div className="glass-panel table-responsive-wrapper">
@@ -103,7 +106,7 @@ export const Sales = () => {
                 <th style={{ padding: '1rem' }}>Paid</th>
                 <th style={{ padding: '1rem' }}>Sold</th>
                 <th style={{ padding: '1rem' }}>Profit</th>
-                <th style={{ padding: '1rem', width: '100px' }}>Actions</th>
+                {!isGuest && <th style={{ padding: '1rem', width: '100px' }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -127,26 +130,28 @@ export const Sales = () => {
                         {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button 
-                          className="glass-button" 
-                          style={{ padding: '0.5rem', background: 'transparent', border: 'none' }}
-                          onClick={() => setSelectedSale(sale)}
-                          title="Edit Sale"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button 
-                          className="glass-button" 
-                          style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: 'var(--danger)' }}
-                          onClick={() => handleDelete(sale.id)}
-                          title="Delete Sale"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {!isGuest && (
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="glass-button" 
+                            style={{ padding: '0.5rem', background: 'transparent', border: 'none' }}
+                            onClick={() => setSelectedSale(sale)}
+                            title="Edit Sale"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            className="glass-button" 
+                            style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: 'var(--danger)' }}
+                            onClick={() => handleDelete(sale.id)}
+                            title="Delete Sale"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

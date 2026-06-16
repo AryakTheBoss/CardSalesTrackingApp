@@ -14,6 +14,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const initializeFirebaseListeners = useStore(state => state.initializeFirebaseListeners);
+  const setIsGuest = useStore(state => state.setIsGuest);
 
   useEffect(() => {
     let unsubscribeListeners: (() => void) | undefined;
@@ -23,6 +24,7 @@ function App() {
       setLoading(false);
       
       if (currentUser) {
+        setIsGuest(currentUser.uid === 'pPkHtsuRKnV2Fobnh20M9WsXDRz1');
         unsubscribeListeners = initializeFirebaseListeners();
       } else if (unsubscribeListeners) {
         unsubscribeListeners();
