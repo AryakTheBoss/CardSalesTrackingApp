@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { db } from '../config/firebase';
-import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, deleteField } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, deleteField, getDocs } from 'firebase/firestore';
 
 export type CardType = 'slab' | 'raw' | 'sealed';
 export type CardStatus = 'in-stock' | 'sold';
@@ -40,6 +40,7 @@ interface AppState {
   updateSale: (id: string, saleData: Partial<Sale>) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => Promise<void>;
+  refreshData: () => Promise<void>;
   getProfitByMonth: (year: number) => { month: string; profit: number }[];
 }
 
@@ -157,6 +158,16 @@ export const useStore = create<AppState>()((set, get) => ({
     });
     
     await batch.commit();
+  },
+
+  refreshData: async () => {
+    const inventorySnapshot = await getDocs(collection(db, 'inventory'));
+    const inventory = inventorySnapshot.docs.map(doc => doc.data() as Card);
+    
+    const salesSnapshot = await getDocs(collection(db, 'sales'));
+    const sales = salesSnapshot.docs.map(doc => doc.data() as Sale);
+    
+    set({ inventory, sales });
   },
 
   getProfitByMonth: (year) => {
