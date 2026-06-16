@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useStore, type Sale } from '../store/useStore';
 
@@ -9,6 +9,7 @@ interface Props {
 
 export const EditSaleModal = ({ sale, onClose }: Props) => {
   const inventory = useStore(state => state.inventory) || [];
+  const shows = useStore(state => state.shows) || [];
   const updateSale = useStore(state => state.updateSale);
   const deleteSale = useStore(state => state.deleteSale);
   
@@ -18,8 +19,25 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
   const [soldPrice, setSoldPrice] = useState(sale.soldPrice.toString());
   const [date, setDate] = useState(localString);
   const [notes, setNotes] = useState(sale.notes || '');
+  const [showId, setShowId] = useState(sale.showId || '');
 
   const card = inventory.find(c => c.id === sale.cardId);
+
+  useEffect(() => {
+    if (!date) return;
+    const [year, month, day] = date.split('-');
+    const saleDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    
+    const matchedShow = shows.find(s => {
+      const showD = new Date(s.date);
+      const showStr = `${showD.getFullYear()}-${String(showD.getMonth() + 1).padStart(2, '0')}-${String(showD.getDate()).padStart(2, '0')}`;
+      return showStr === saleDateStr;
+    });
+
+    if (matchedShow) {
+      setShowId(matchedShow.id);
+    }
+  }, [date, shows]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +49,8 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
     updateSale(sale.id, {
       soldPrice: parseFloat(soldPrice),
       date: localDate.toISOString(),
-      notes
+      notes,
+      showId: showId || undefined
     });
     onClose();
   };
@@ -87,6 +106,29 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
               onChange={e => setDate(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Tag to Show (Optional)</label>
+            <select 
+              className="glass-input"
+              value={showId}
+              onChange={e => setShowId(e.target.value)}
+              style={{ background: '#1e1b4b', appearance: 'auto' }}
+            >
+              <option value="">-- No Show --</option>
+              <optgroup label="General Tags">
+                <option value="Non-vended show">Non-vended show</option>
+                <option value="Online/Discord">Online/Discord</option>
+              </optgroup>
+              <optgroup label="Registered Shows">
+                {shows.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(show => (
+                  <option key={show.id} value={show.id}>
+                    {show.name} ({new Date(show.date).toLocaleDateString()})
+                  </option>
+                ))}
+              </optgroup>
+            </select>
           </div>
 
           <div className="form-group">

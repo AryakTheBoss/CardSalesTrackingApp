@@ -7,6 +7,7 @@ import { EditSaleModal } from '../components/EditSaleModal';
 export const Sales = () => {
   const sales = useStore(state => state.sales) || [];
   const inventory = useStore(state => state.inventory) || [];
+  const shows = useStore(state => state.shows) || [];
   const deleteSale = useStore(state => state.deleteSale);
   const isGuest = useStore(state => state.isGuest);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,13 +113,23 @@ export const Sales = () => {
             <tbody>
               {sortedSales.map(sale => {
                 const card = inventory.find(c => c.id === sale.cardId);
+                const show = shows.find(s => s.id === sale.showId);
+                const isHardcodedShow = sale.showId === 'Non-vended show' || sale.showId === 'Online/Discord';
+                const showName = show ? show.name : (isHardcodedShow ? sale.showId : null);
                 const profit = card ? sale.soldPrice - card.pricePaid : 0;
                 
                 return (
                   <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '1rem' }}>
                       <div className="font-medium">{card?.name || 'Unknown Card'}</div>
-                      <div className="text-xs text-secondary">{sale.notes}</div>
+                      <div className="text-xs text-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                        {showName && (
+                          <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '0.1rem 0.4rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                            {sale.showId === 'Online/Discord' ? '💻' : '🎪'} {showName}
+                          </span>
+                        )}
+                        <span>{sale.notes}</span>
+                      </div>
                     </td>
                     <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
                       {new Date(sale.date).toLocaleDateString()}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
@@ -8,6 +8,7 @@ interface Props {
 
 export const AddSaleModal = ({ onClose }: Props) => {
   const inventory = useStore(state => state.inventory) || [];
+  const shows = useStore(state => state.shows) || [];
   const addSale = useStore(state => state.addSale);
   
   const [cardId, setCardId] = useState('');
@@ -18,11 +19,28 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const localTodayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [date, setDate] = useState(localTodayString);
   const [notes, setNotes] = useState('');
+  const [showId, setShowId] = useState('');
 
   const availableCards = inventory.filter(c => c.status === 'in-stock');
   const filteredCards = availableCards.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  useEffect(() => {
+    if (!date) return;
+    const [year, month, day] = date.split('-');
+    const saleDateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    
+    const matchedShow = shows.find(s => {
+      const showD = new Date(s.date);
+      const showStr = `${showD.getFullYear()}-${String(showD.getMonth() + 1).padStart(2, '0')}-${String(showD.getDate()).padStart(2, '0')}`;
+      return showStr === saleDateStr;
+    });
+
+    if (matchedShow) {
+      setShowId(matchedShow.id);
+    }
+  }, [date, shows]);
 
   const handleSelectCard = (card: any) => {
     setCardId(card.id);
@@ -47,7 +65,8 @@ export const AddSaleModal = ({ onClose }: Props) => {
       cardId,
       soldPrice: parseFloat(soldPrice),
       date: localDate.toISOString(),
-      notes
+      notes,
+      ...(showId ? { showId } : {})
     });
     onClose();
   };
@@ -144,6 +163,29 @@ export const AddSaleModal = ({ onClose }: Props) => {
               onChange={e => setDate(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Tag to Show (Optional)</label>
+            <select 
+              className="glass-input"
+              value={showId}
+              onChange={e => setShowId(e.target.value)}
+              style={{ background: '#1e1b4b', appearance: 'auto' }}
+            >
+              <option value="">-- No Show --</option>
+              <optgroup label="General Tags">
+                <option value="Non-vended show">Non-vended show</option>
+                <option value="Online/Discord">Online/Discord</option>
+              </optgroup>
+              <optgroup label="Registered Shows">
+                {shows.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(show => (
+                  <option key={show.id} value={show.id}>
+                    {show.name} ({new Date(show.date).toLocaleDateString()})
+                  </option>
+                ))}
+              </optgroup>
+            </select>
           </div>
 
           <div className="form-group">

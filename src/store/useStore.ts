@@ -24,11 +24,21 @@ export interface Sale {
   soldPrice: number;
   date: string;
   notes: string;
+  showId?: string;
+}
+
+export interface Show {
+  id: string;
+  name: string;
+  date: string;
+  tables: number;
+  tableCost: number;
 }
 
 interface AppState {
   inventory: Card[];
   sales: Sale[];
+  shows: Show[];
   isFirebaseInitialized: boolean;
   isGuest: boolean;
   setIsGuest: (isGuest: boolean) => void;
@@ -39,6 +49,9 @@ interface AppState {
   addSale: (sale: Omit<Sale, 'id' | 'date'> & { date?: string }) => Promise<void>;
   updateSale: (id: string, saleData: Partial<Sale>) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
+  addShow: (show: Omit<Show, 'id'>) => Promise<void>;
+  updateShow: (id: string, showData: Partial<Show>) => Promise<void>;
+  deleteShow: (id: string) => Promise<void>;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => Promise<void>;
   refreshData: () => Promise<void>;
   getProfitByMonth: (year: number) => { month: string; profit: number }[];
@@ -53,6 +66,7 @@ export const generateId = () => {
 export const useStore = create<AppState>()((set, get) => ({
   inventory: [],
   sales: [],
+  shows: [],
   isFirebaseInitialized: false,
   isGuest: false,
 
@@ -69,9 +83,15 @@ export const useStore = create<AppState>()((set, get) => ({
       set({ sales });
     });
 
+    const unsubShows = onSnapshot(collection(db, 'shows'), (snapshot) => {
+      const shows = snapshot.docs.map(doc => doc.data() as Show);
+      set({ shows });
+    });
+
     return () => {
       unsubInventory();
       unsubSales();
+      unsubShows();
     };
   },
 
@@ -144,6 +164,28 @@ export const useStore = create<AppState>()((set, get) => ({
     await batch.commit();
   },
 
+  addShow: async (show) => {
+    const newShow: Show = {
+      ...show,
+      id: generateId(),
+    };
+    await setDoc(doc(db, 'shows', newShow.id), newShow);
+  },
+
+  updateShow: async (id, showData) => {
+    const sanitizedData = { ...showData } as any;
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        sanitizedData[key] = deleteField();
+      }
+    });
+    await updateDoc(doc(db, 'shows', id), sanitizedData);
+  },
+
+  deleteShow: async (id) => {
+    await deleteDoc(doc(db, 'shows', id));
+  },
+
   syncFromExcel: async (inventory, sales) => {
     const batch = writeBatch(db);
     
@@ -167,7 +209,10 @@ export const useStore = create<AppState>()((set, get) => ({
     const salesSnapshot = await getDocs(collection(db, 'sales'));
     const sales = salesSnapshot.docs.map(doc => doc.data() as Sale);
     
-    set({ inventory, sales });
+    const showsSnapshot = await getDocs(collection(db, 'shows'));
+    const shows = showsSnapshot.docs.map(doc => doc.data() as Show);
+    
+    set({ inventory, sales, shows });
   },
 
   getProfitByMonth: (year) => {

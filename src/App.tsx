@@ -7,6 +7,7 @@ import { AppLayout } from './components/AppLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Inventory } from './pages/Inventory';
 import { Sales } from './pages/Sales';
+import { Shows } from './pages/Shows';
 import { Login } from './pages/Login';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -56,6 +57,7 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="sales" element={<Sales />} />
+              <Route path="shows" element={<Shows />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           )}
