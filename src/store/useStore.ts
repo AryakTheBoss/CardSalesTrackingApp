@@ -35,10 +35,22 @@ export interface Show {
   tableCost: number;
 }
 
+export interface Shift {
+  id: string;
+  employee: 'Tae' | 'Hub' | 'Vic' | string;
+  showId: string;
+  date: string;
+  hours: number;
+  hourlyRate: number;
+  bonus: number;
+  status: 'Paid' | 'Pending';
+}
+
 interface AppState {
   inventory: Card[];
   sales: Sale[];
   shows: Show[];
+  shifts: Shift[];
   isFirebaseInitialized: boolean;
   isGuest: boolean;
   setIsGuest: (isGuest: boolean) => void;
@@ -52,6 +64,9 @@ interface AppState {
   addShow: (show: Omit<Show, 'id'>) => Promise<void>;
   updateShow: (id: string, showData: Partial<Show>) => Promise<void>;
   deleteShow: (id: string) => Promise<void>;
+  addShift: (shift: Omit<Shift, 'id'>) => Promise<void>;
+  updateShift: (id: string, shiftData: Partial<Shift>) => Promise<void>;
+  deleteShift: (id: string) => Promise<void>;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => Promise<void>;
   refreshData: () => Promise<void>;
   getProfitByMonth: (year: number) => { month: string; profit: number }[];
@@ -67,6 +82,7 @@ export const useStore = create<AppState>()((set, get) => ({
   inventory: [],
   sales: [],
   shows: [],
+  shifts: [],
   isFirebaseInitialized: false,
   isGuest: false,
 
@@ -88,10 +104,16 @@ export const useStore = create<AppState>()((set, get) => ({
       set({ shows });
     });
 
+    const unsubShifts = onSnapshot(collection(db, 'shifts'), (snapshot) => {
+      const shifts = snapshot.docs.map(doc => doc.data() as Shift);
+      set({ shifts });
+    });
+
     return () => {
       unsubInventory();
       unsubSales();
       unsubShows();
+      unsubShifts();
     };
   },
 
@@ -186,6 +208,28 @@ export const useStore = create<AppState>()((set, get) => ({
     await deleteDoc(doc(db, 'shows', id));
   },
 
+  addShift: async (shift) => {
+    const newShift: Shift = {
+      ...shift,
+      id: generateId(),
+    };
+    await setDoc(doc(db, 'shifts', newShift.id), newShift);
+  },
+
+  updateShift: async (id, shiftData) => {
+    const sanitizedData = { ...shiftData } as any;
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        sanitizedData[key] = deleteField();
+      }
+    });
+    await updateDoc(doc(db, 'shifts', id), sanitizedData);
+  },
+
+  deleteShift: async (id) => {
+    await deleteDoc(doc(db, 'shifts', id));
+  },
+
   syncFromExcel: async (inventory, sales) => {
     const batch = writeBatch(db);
     
@@ -212,7 +256,10 @@ export const useStore = create<AppState>()((set, get) => ({
     const showsSnapshot = await getDocs(collection(db, 'shows'));
     const shows = showsSnapshot.docs.map(doc => doc.data() as Show);
     
-    set({ inventory, sales, shows });
+    const shiftsSnapshot = await getDocs(collection(db, 'shifts'));
+    const shifts = shiftsSnapshot.docs.map(doc => doc.data() as Shift);
+    
+    set({ inventory, sales, shows, shifts });
   },
 
   getProfitByMonth: (year) => {

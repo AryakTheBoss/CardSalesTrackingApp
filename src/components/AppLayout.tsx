@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Tent } from 'lucide-react';
+import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Calendar, Banknote } from 'lucide-react';
 import React, { useState } from 'react';
 import { auth } from '../config/firebase';
 import { useStore } from '../store/useStore';
@@ -47,7 +47,8 @@ export const AppLayout = () => {
           <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
           <NavItem to="/inventory" icon={WalletCards} label="Inventory" />
           <NavItem to="/sales" icon={BadgeDollarSign} label="Sales" />
-          <NavItem to="/shows" icon={Tent} label="Shows" />
+          <NavItem to="/shows" icon={Calendar} label="Shows" />
+          <NavItem to="/payroll" icon={Banknote} label="Payroll" />
         </nav>
 
         <div className="sidebar-footer border-t" style={{ borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '1rem' }}>

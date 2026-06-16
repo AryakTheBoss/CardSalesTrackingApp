@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Inventory } from './pages/Inventory';
 import { Sales } from './pages/Sales';
 import { Shows } from './pages/Shows';
+import { Payroll } from './pages/Payroll';
 import { Login } from './pages/Login';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -58,6 +59,7 @@ function App() {
               <Route path="inventory" element={<Inventory />} />
               <Route path="sales" element={<Sales />} />
               <Route path="shows" element={<Shows />} />
+              <Route path="payroll" element={<Payroll />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           )}
