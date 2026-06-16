@@ -69,7 +69,6 @@ interface AppState {
   deleteShift: (id: string) => Promise<void>;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => Promise<void>;
   refreshData: () => Promise<void>;
-  getProfitByMonth: (year: number) => { month: string; profit: number }[];
 }
 
 export const generateId = () => {
@@ -260,28 +259,5 @@ export const useStore = create<AppState>()((set, get) => ({
     const shifts = shiftsSnapshot.docs.map(doc => doc.data() as Shift);
     
     set({ inventory, sales, shows, shifts });
-  },
-
-  getProfitByMonth: (year) => {
-    const state = get();
-    const sales = state.sales || [];
-    const inventory = state.inventory || [];
-    const monthlyProfits = Array.from({ length: 12 }, (_, i) => ({
-      month: new Date(year, i, 1).toLocaleString('default', { month: 'short' }),
-      profit: 0
-    }));
-
-    sales.forEach(sale => {
-      const saleDate = new Date(sale.date);
-      if (saleDate.getFullYear() === year) {
-        const card = inventory.find(c => c.id === sale.cardId);
-        if (card) {
-          const profit = sale.soldPrice - card.pricePaid;
-          monthlyProfits[saleDate.getMonth()].profit += profit;
-        }
-      }
-    });
-
-    return monthlyProfits;
   }
 }));
