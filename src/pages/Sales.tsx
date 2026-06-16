@@ -1,14 +1,23 @@
 import { useState } from 'react';
-import { useStore } from '../store/useStore';
-import { Plus } from 'lucide-react';
+import { useStore, type Sale } from '../store/useStore';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { AddSaleModal } from '../components/AddSaleModal';
+import { EditSaleModal } from '../components/EditSaleModal';
 
 export const Sales = () => {
   const sales = useStore(state => state.sales) || [];
   const inventory = useStore(state => state.inventory) || [];
+  const deleteSale = useStore(state => state.deleteSale);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleDelete = (saleId: string) => {
+    if (confirm('Are you sure you want to delete this sale? The card will be returned to your inventory.')) {
+      deleteSale(saleId);
+    }
+  };
 
   const filteredSales = sales.filter(sale => {
     const card = inventory.find(c => c.id === sale.cardId);
@@ -94,6 +103,7 @@ export const Sales = () => {
                 <th style={{ padding: '1rem' }}>Paid</th>
                 <th style={{ padding: '1rem' }}>Sold</th>
                 <th style={{ padding: '1rem' }}>Profit</th>
+                <th style={{ padding: '1rem', width: '100px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -117,6 +127,26 @@ export const Sales = () => {
                         {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
                       </span>
                     </td>
+                    <td style={{ padding: '1rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          className="glass-button" 
+                          style={{ padding: '0.5rem', background: 'transparent', border: 'none' }}
+                          onClick={() => setSelectedSale(sale)}
+                          title="Edit Sale"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                          className="glass-button" 
+                          style={{ padding: '0.5rem', background: 'transparent', border: 'none', color: 'var(--danger)' }}
+                          onClick={() => handleDelete(sale.id)}
+                          title="Delete Sale"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -126,6 +156,7 @@ export const Sales = () => {
       )}
 
       {isModalOpen && <AddSaleModal onClose={() => setIsModalOpen(false)} />}
+      {selectedSale && <EditSaleModal sale={selectedSale} onClose={() => setSelectedSale(null)} />}
     </div>
   );
 };

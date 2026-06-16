@@ -35,6 +35,8 @@ interface AppState {
   updateCard: (id: string, cardData: Partial<Card>) => Promise<void>;
   deleteCard: (id: string) => Promise<void>;
   addSale: (sale: Omit<Sale, 'id' | 'date'> & { date?: string }) => Promise<void>;
+  updateSale: (id: string, saleData: Partial<Sale>) => Promise<void>;
+  deleteSale: (id: string) => Promise<void>;
   syncFromExcel: (inventory: Card[], sales: Sale[]) => Promise<void>;
   getProfitByMonth: (year: number) => { month: string; profit: number }[];
 }
@@ -112,6 +114,27 @@ export const useStore = create<AppState>()((set, get) => ({
     const batch = writeBatch(db);
     batch.set(doc(db, 'sales', newSale.id), newSale);
     batch.update(doc(db, 'inventory', newSale.cardId), { status: 'sold' });
+    await batch.commit();
+  },
+
+  updateSale: async (id, saleData) => {
+    const sanitizedData = { ...saleData } as any;
+    Object.keys(sanitizedData).forEach(key => {
+      if (sanitizedData[key] === undefined) {
+        sanitizedData[key] = deleteField();
+      }
+    });
+    await updateDoc(doc(db, 'sales', id), sanitizedData);
+  },
+
+  deleteSale: async (id) => {
+    const state = get();
+    const sale = state.sales.find(s => s.id === id);
+    if (!sale) return;
+
+    const batch = writeBatch(db);
+    batch.delete(doc(db, 'sales', id));
+    batch.update(doc(db, 'inventory', sale.cardId), { status: 'in-stock' });
     await batch.commit();
   },
 

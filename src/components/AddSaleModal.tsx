@@ -14,7 +14,9 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [soldPrice, setSoldPrice] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const today = new Date();
+  const localTodayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const [date, setDate] = useState(localTodayString);
   const [notes, setNotes] = useState('');
 
   const availableCards = inventory.filter(c => c.status === 'in-stock');
@@ -38,10 +40,13 @@ export const AddSaleModal = ({ onClose }: Props) => {
     e.preventDefault();
     if (!cardId || !soldPrice) return;
 
+    const [year, month, day] = date.split('-');
+    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+
     addSale({
       cardId,
       soldPrice: parseFloat(soldPrice),
-      date: new Date(date).toISOString(),
+      date: localDate.toISOString(),
       notes
     });
     onClose();
