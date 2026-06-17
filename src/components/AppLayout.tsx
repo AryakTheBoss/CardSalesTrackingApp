@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Calendar, Banknote } from 'lucide-react';
+import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Calendar, Banknote, User } from 'lucide-react';
 import React, { useState } from 'react';
 import { auth } from '../config/firebase';
 import { useStore } from '../store/useStore';
@@ -41,6 +41,12 @@ export const AppLayout = () => {
         <div className="sidebar-header p-6" style={{ textAlign: 'center' }}>
           <h1 className="text-2xl font-bold text-gradient">Apex Collects</h1>
           <p className="text-sm text-secondary mt-1">Inventory Tracker</p>
+          {auth.currentUser?.email && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem', marginInline: '1rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '999px' }}>
+              <User size={16} className="text-accent-primary" />
+              <span className="text-sm font-medium text-secondary">{auth.currentUser.email}</span>
+            </div>
+          )}
         </div>
 
         <nav className="sidebar-nav flex-1 flex flex-col">

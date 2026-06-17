@@ -31,7 +31,29 @@ export const Shows = () => {
     if (sortOption === 'cost-asc') return (a.tables * a.tableCost) - (b.tables * b.tableCost);
     return 0;
   });
-  //E
+
+  const getShowStatus = (dateStr: string) => {
+    const showDate = new Date(dateStr);
+    const today = new Date();
+    
+    // Normalize to midnight for accurate day comparison
+    showDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    if (showDate.getTime() === today.getTime()) return 'Today';
+    if (showDate.getTime() > today.getTime()) return 'Upcoming';
+    return 'Completed';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Today': return { bg: 'rgba(234, 179, 8, 0.2)', text: '#facc15' };
+      case 'Upcoming': return { bg: 'rgba(59, 130, 246, 0.2)', text: '#60a5fa' };
+      case 'Completed': return { bg: 'rgba(16, 185, 129, 0.2)', text: '#4ade80' };
+      default: return { bg: 'rgba(255,255,255,0.1)', text: '#fff' };
+    }
+  };
+
   return (
     <div className="animate-in">
       <div className="view-header flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -79,6 +101,7 @@ export const Shows = () => {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}>
                 <th style={{ padding: '1rem' }}>Show Name</th>
+                <th style={{ padding: '1rem' }}>Status</th>
                 <th style={{ padding: '1rem' }}>Date</th>
                 <th style={{ padding: '1rem' }}>Tables</th>
                 <th style={{ padding: '1rem' }}>Table Cost</th>
@@ -98,6 +121,18 @@ export const Shows = () => {
                     onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <td style={{ padding: '1rem', fontWeight: '500' }}>{show.name}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{ 
+                        background: getStatusColor(getShowStatus(show.date)).bg,
+                        color: getStatusColor(getShowStatus(show.date)).text,
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '999px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600'
+                      }}>
+                        {getShowStatus(show.date)}
+                      </span>
+                    </td>
                     <td style={{ padding: '1rem' }}>{new Date(show.date).toLocaleDateString()}</td>
                     <td style={{ padding: '1rem' }}>{show.tables}</td>
                     <td style={{ padding: '1rem' }}>${show.tableCost.toFixed(2)}</td>
