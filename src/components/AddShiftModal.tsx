@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 
 export const AddShiftModal = ({ onClose }: { onClose: () => void }) => {
   const addShift = useStore(state => state.addShift);
@@ -13,6 +13,8 @@ export const AddShiftModal = ({ onClose }: { onClose: () => void }) => {
   const [hourlyRate, setHourlyRate] = useState('');
   const [bonus, setBonus] = useState('0');
   const [status, setStatus] = useState<'Paid' | 'Pending'>('Pending');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-populate date when show changes
   useEffect(() => {
@@ -28,24 +30,36 @@ export const AddShiftModal = ({ onClose }: { onClose: () => void }) => {
     }
   }, [showId, shows]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!employee || !showId || !date || !hours || !hourlyRate) return;
 
-    const [year, month, day] = date.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const [year, month, day] = date.split('-');
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    addShift({
-      employee,
-      showId,
-      date: localDate.toISOString(),
-      hours: parseFloat(hours),
-      hourlyRate: parseFloat(hourlyRate),
-      bonus: parseFloat(bonus) || 0,
-      status
-    });
-    
-    onClose();
+      await addShift({
+        employee,
+        showId,
+        date: localDate.toISOString(),
+        hours: parseFloat(hours),
+        hourlyRate: parseFloat(hourlyRate),
+        bonus: parseFloat(bonus) || 0,
+        status
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to add shift. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -59,6 +73,13 @@ export const AddShiftModal = ({ onClose }: { onClose: () => void }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Employee Name</label>
             <select 
@@ -163,8 +184,10 @@ export const AddShiftModal = ({ onClose }: { onClose: () => void }) => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" className="glass-button" onClick={onClose}>Cancel</button>
-            <button type="submit" className="glass-button primary">Add Shift</button>
+            <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Add Shift'}
+            </button>
           </div>
         </form>
       </div>

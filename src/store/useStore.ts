@@ -53,7 +53,9 @@ interface AppState {
   shifts: Shift[];
   isFirebaseInitialized: boolean;
   isGuest: boolean;
+  firebaseError: string | null;
   setIsGuest: (isGuest: boolean) => void;
+  setFirebaseError: (error: string | null) => void;
   initializeFirebaseListeners: () => () => void;
   addCard: (card: Omit<Card, 'id' | 'status' | 'dateAdded'>) => Promise<void>;
   updateCard: (id: string, cardData: Partial<Card>) => Promise<void>;
@@ -84,29 +86,40 @@ export const useStore = create<AppState>()((set, get) => ({
   shifts: [],
   isFirebaseInitialized: false,
   isGuest: false,
+  firebaseError: null,
 
   setIsGuest: (isGuest) => set({ isGuest }),
+  setFirebaseError: (firebaseError) => set({ firebaseError }),
 
   initializeFirebaseListeners: () => {
+    const handleSnapshotError = (error: any) => {
+      console.error("Firebase Snapshot Error:", error);
+      if (error.code === 'permission-denied') {
+        set({ firebaseError: 'You do not have permission to access some data.' });
+      } else {
+        set({ firebaseError: error.message || 'Failed to sync with Firebase.' });
+      }
+    };
+
     const unsubInventory = onSnapshot(collection(db, 'inventory'), (snapshot) => {
       const inventory = snapshot.docs.map(doc => doc.data() as Card);
-      set({ inventory, isFirebaseInitialized: true });
-    });
+      set({ inventory, isFirebaseInitialized: true, firebaseError: null });
+    }, handleSnapshotError);
 
     const unsubSales = onSnapshot(collection(db, 'sales'), (snapshot) => {
       const sales = snapshot.docs.map(doc => doc.data() as Sale);
-      set({ sales });
-    });
+      set({ sales, firebaseError: null });
+    }, handleSnapshotError);
 
     const unsubShows = onSnapshot(collection(db, 'shows'), (snapshot) => {
       const shows = snapshot.docs.map(doc => doc.data() as Show);
-      set({ shows });
-    });
+      set({ shows, firebaseError: null });
+    }, handleSnapshotError);
 
     const unsubShifts = onSnapshot(collection(db, 'shifts'), (snapshot) => {
       const shifts = snapshot.docs.map(doc => doc.data() as Shift);
-      set({ shifts });
-    });
+      set({ shifts, firebaseError: null });
+    }, handleSnapshotError);
 
     return () => {
       unsubInventory();
@@ -246,18 +259,27 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   refreshData: async () => {
-    const inventorySnapshot = await getDocs(collection(db, 'inventory'));
-    const inventory = inventorySnapshot.docs.map(doc => doc.data() as Card);
-    
-    const salesSnapshot = await getDocs(collection(db, 'sales'));
-    const sales = salesSnapshot.docs.map(doc => doc.data() as Sale);
-    
-    const showsSnapshot = await getDocs(collection(db, 'shows'));
-    const shows = showsSnapshot.docs.map(doc => doc.data() as Show);
-    
-    const shiftsSnapshot = await getDocs(collection(db, 'shifts'));
-    const shifts = shiftsSnapshot.docs.map(doc => doc.data() as Shift);
-    
-    set({ inventory, sales, shows, shifts });
+    try {
+      const inventorySnapshot = await getDocs(collection(db, 'inventory'));
+      const inventory = inventorySnapshot.docs.map(doc => doc.data() as Card);
+      
+      const salesSnapshot = await getDocs(collection(db, 'sales'));
+      const sales = salesSnapshot.docs.map(doc => doc.data() as Sale);
+      
+      const showsSnapshot = await getDocs(collection(db, 'shows'));
+      const shows = showsSnapshot.docs.map(doc => doc.data() as Show);
+      
+      const shiftsSnapshot = await getDocs(collection(db, 'shifts'));
+      const shifts = shiftsSnapshot.docs.map(doc => doc.data() as Shift);
+      
+      set({ inventory, sales, shows, shifts, firebaseError: null });
+    } catch (error: any) {
+      console.error("Refresh Data Error:", error);
+      if (error.code === 'permission-denied') {
+        set({ firebaseError: 'Permission denied while refreshing data.' });
+      } else {
+        set({ firebaseError: error.message || 'Failed to refresh data from Firebase.' });
+      }
+    }
   }
 }));

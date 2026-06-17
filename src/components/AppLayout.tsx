@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Calendar, Banknote, User } from 'lucide-react';
+import { LayoutDashboard, WalletCards, BadgeDollarSign, LogOut, RefreshCw, Calendar, Banknote, User, AlertCircle, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { auth } from '../config/firebase';
 import { useStore } from '../store/useStore';
@@ -21,6 +21,8 @@ const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementTyp
 
 export const AppLayout = () => {
   const refreshData = useStore(state => state.refreshData);
+  const firebaseError = useStore(state => state.firebaseError);
+  const setFirebaseError = useStore(state => state.setFirebaseError);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -80,8 +82,36 @@ export const AppLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="main-content">
-        <Outlet />
+      <main className="main-content" style={{ display: 'flex', flexDirection: 'column' }}>
+        {firebaseError && (
+          <div style={{ 
+            background: 'rgba(239, 68, 68, 0.1)', 
+            border: '1px solid rgba(239, 68, 68, 0.3)', 
+            padding: '1rem 1.5rem', 
+            borderRadius: '12px', 
+            marginBottom: '2rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            gap: '1rem', 
+            color: '#fca5a5',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <AlertCircle size={24} />
+              <p className="font-medium">{firebaseError}</p>
+            </div>
+            <button 
+              onClick={() => setFirebaseError(null)}
+              style={{ background: 'transparent', border: 'none', color: '#fca5a5', cursor: 'pointer', padding: '0.25rem' }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+        )}
+        <div style={{ flex: 1 }}>
+          <Outlet />
+        </div>
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 interface Props {
@@ -20,6 +20,8 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const [date, setDate] = useState(localTodayString);
   const [notes, setNotes] = useState('');
   const [showId, setShowId] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableCards = inventory.filter(c => c.status === 'in-stock');
   const filteredCards = availableCards.filter(c => 
@@ -54,21 +56,34 @@ export const AddSaleModal = ({ onClose }: Props) => {
     setIsOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cardId || !soldPrice) return;
 
-    const [year, month, day] = date.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const [year, month, day] = date.split('-');
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    addSale({
-      cardId,
-      soldPrice: parseFloat(soldPrice),
-      date: localDate.toISOString(),
-      notes,
-      ...(showId ? { showId } : {})
-    });
-    onClose();
+      await addSale({
+        cardId,
+        soldPrice: parseFloat(soldPrice),
+        date: localDate.toISOString(),
+        notes,
+        ...(showId ? { showId } : {})
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to log sale. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,6 +97,13 @@ export const AddSaleModal = ({ onClose }: Props) => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+          
           <div className="form-group" style={{ position: 'relative' }}>
             <label>Search & Select Card</label>
             <input 
@@ -201,8 +223,10 @@ export const AddSaleModal = ({ onClose }: Props) => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" className="glass-button" onClick={onClose}>Cancel</button>
-            <button type="submit" className="glass-button primary">Log Sale</button>
+            <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Log Sale'}
+            </button>
           </div>
         </form>
       </div>

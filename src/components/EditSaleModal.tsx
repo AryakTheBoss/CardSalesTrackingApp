@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, AlertCircle } from 'lucide-react';
 import { useStore, type Sale } from '../store/useStore';
 
 interface Props {
@@ -20,6 +20,8 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
   const [date, setDate] = useState(localString);
   const [notes, setNotes] = useState(sale.notes || '');
   const [showId, setShowId] = useState(sale.showId || '');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const card = inventory.find(c => c.id === sale.cardId);
 
@@ -39,26 +41,51 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
     }
   }, [date, shows]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!soldPrice) return;
 
-    const [year, month, day] = date.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const [year, month, day] = date.split('-');
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    updateSale(sale.id, {
-      soldPrice: parseFloat(soldPrice),
-      date: localDate.toISOString(),
-      notes,
-      showId: showId || undefined
-    });
-    onClose();
+      await updateSale(sale.id, {
+        soldPrice: parseFloat(soldPrice),
+        date: localDate.toISOString(),
+        notes,
+        showId: showId || undefined
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to update sale. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this sale? The card will be returned to your inventory.')) {
-      deleteSale(sale.id);
-      onClose();
+      try {
+        setError(null);
+        setIsSubmitting(true);
+        await deleteSale(sale.id);
+        onClose();
+      } catch (err: any) {
+        console.error(err);
+        if (err.code === 'permission-denied') {
+          setError("You don't have permission to delete this sale.");
+        } else {
+          setError(err.message || 'Failed to delete sale. Please try again.');
+        }
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -73,6 +100,13 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Card Sold</label>
             <input 
@@ -149,13 +183,16 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
               className="glass-button" 
               style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
               onClick={handleDelete}
+              disabled={isSubmitting}
             >
               <Trash2 size={18} style={{ marginRight: '0.5rem' }} />
               Delete Sale
             </button>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="button" className="glass-button" onClick={onClose}>Cancel</button>
-              <button type="submit" className="glass-button primary">Save Changes</button>
+              <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
+              <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
           </div>
         </form>

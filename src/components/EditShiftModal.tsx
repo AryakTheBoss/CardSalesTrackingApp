@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore, type Shift } from '../store/useStore';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, AlertCircle } from 'lucide-react';
 
 export const EditShiftModal = ({ shift, onClose }: { shift: Shift; onClose: () => void }) => {
   const updateShift = useStore(state => state.updateShift);
@@ -17,6 +17,8 @@ export const EditShiftModal = ({ shift, onClose }: { shift: Shift; onClose: () =
   const initialDate = new Date(shift.date);
   const localInitialDateStr = `${initialDate.getFullYear()}-${String(initialDate.getMonth() + 1).padStart(2, '0')}-${String(initialDate.getDate()).padStart(2, '0')}`;
   const [date, setDate] = useState(localInitialDateStr);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Auto-populate date when show changes
   useEffect(() => {
@@ -32,30 +34,54 @@ export const EditShiftModal = ({ shift, onClose }: { shift: Shift; onClose: () =
     }
   }, [showId, shows]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!employee || !showId || !date || !hours || !hourlyRate) return;
 
-    const [year, month, day] = date.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const [year, month, day] = date.split('-');
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    updateShift(shift.id, {
-      employee,
-      showId,
-      date: localDate.toISOString(),
-      hours: parseFloat(hours),
-      hourlyRate: parseFloat(hourlyRate),
-      bonus: parseFloat(bonus) || 0,
-      status
-    });
-    
-    onClose();
+      await updateShift(shift.id, {
+        employee,
+        showId,
+        date: localDate.toISOString(),
+        hours: parseFloat(hours),
+        hourlyRate: parseFloat(hourlyRate),
+        bonus: parseFloat(bonus) || 0,
+        status
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to update shift. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this shift?')) {
-      deleteShift(shift.id);
-      onClose();
+      try {
+        setError(null);
+        setIsSubmitting(true);
+        await deleteShift(shift.id);
+        onClose();
+      } catch (err: any) {
+        console.error(err);
+        if (err.code === 'permission-denied') {
+          setError("You don't have permission to delete this shift.");
+        } else {
+          setError(err.message || 'Failed to delete shift. Please try again.');
+        }
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -70,6 +96,13 @@ export const EditShiftModal = ({ shift, onClose }: { shift: Shift; onClose: () =
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Employee Name</label>
             <select 
@@ -179,13 +212,16 @@ export const EditShiftModal = ({ shift, onClose }: { shift: Shift; onClose: () =
               className="glass-button" 
               style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
               onClick={handleDelete}
+              disabled={isSubmitting}
             >
               <Trash2 size={18} style={{ marginRight: '0.5rem' }} />
               Delete Shift
             </button>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="button" className="glass-button" onClick={onClose}>Cancel</button>
-              <button type="submit" className="glass-button primary">Save Changes</button>
+              <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
+              <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
           </div>
         </form>

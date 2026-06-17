@@ -27,29 +27,44 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--bg-gradient)' }}>
-          <div className="glass-panel" style={{ padding: '2rem', maxWidth: '600px', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--danger)', marginBottom: '1rem' }}>
-              <AlertCircle size={32} />
-              <h1 className="text-2xl font-bold">Something went wrong</h1>
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0a0a0a' }}>
+          <div className="glass-panel" style={{ padding: '3rem', maxWidth: '600px', width: '100%', borderTop: '4px solid #ef4444', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', color: '#ef4444', marginBottom: '1.5rem' }}>
+              <AlertCircle size={48} />
             </div>
-            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}>
-              <pre style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+            <h1 className="text-3xl font-bold mb-4">Application Error</h1>
+            <p className="text-secondary mb-6 text-lg">
+              We encountered an unexpected error while rendering this page.
+            </p>
+            
+            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px', overflowX: 'auto', textAlign: 'left', marginBottom: '2rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <pre style={{ color: '#fca5a5', fontSize: '0.875rem', margin: 0, whiteSpace: 'pre-wrap' }}>
                 {this.state.error?.toString()}
-                {'\n\n'}
-                {this.state.error?.stack}
               </pre>
             </div>
-            <button 
-              className="glass-button primary" 
-              style={{ marginTop: '2rem' }}
-              onClick={() => {
-                localStorage.clear();
-                window.location.reload();
-              }}
-            >
-              Clear Data & Reload
-            </button>
+
+            <p className="text-sm text-secondary mb-6">
+              If this problem persists, you may need to clear your local cache and restart the app.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button 
+                className="glass-button" 
+                onClick={() => window.location.reload()}
+              >
+                Reload Page
+              </button>
+              <button 
+                className="glass-button primary" 
+                style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+              >
+                Clear Cache & Reload
+              </button>
+            </div>
           </div>
         </div>
       );

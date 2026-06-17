@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 import { useStore, type CardType } from '../store/useStore';
 
 interface Props {
@@ -15,20 +15,35 @@ export const AddCardModal = ({ onClose }: Props) => {
   const [grade, setGrade] = useState('');
   const [condition, setCondition] = useState('');
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !pricePaid) return;
 
-    addCard({
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      await addCard({
       name,
       pricePaid: parseFloat(pricePaid),
       type,
       notes,
       ...(type === 'slab' ? { gradingCompany, grade } : {}),
       ...(type === 'raw' ? { condition } : {})
-    });
-    onClose();
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to save card. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -42,6 +57,13 @@ export const AddCardModal = ({ onClose }: Props) => {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Card Name</label>
             <input 
@@ -160,8 +182,10 @@ export const AddCardModal = ({ onClose }: Props) => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" className="glass-button" onClick={onClose}>Cancel</button>
-            <button type="submit" className="glass-button primary">Save Card</button>
+            <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Card'}
+            </button>
           </div>
         </form>
       </div>

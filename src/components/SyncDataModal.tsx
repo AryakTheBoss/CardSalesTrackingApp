@@ -23,14 +23,18 @@ export const SyncDataModal = ({ onClose }: Props) => {
 
     try {
       const { inventory, sales } = await parseExcelFile(file);
-      syncFromExcel(inventory, sales);
+      await syncFromExcel(inventory, sales);
       setSuccess(`Successfully imported ${inventory.length} cards and ${sales.length} sales!`);
       setTimeout(() => {
         onClose();
       }, 2000);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Failed to parse Excel file. Please ensure it matches the required template.');
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to sync data.");
+      } else {
+        setError(err.message || 'Failed to parse Excel file. Please ensure it matches the required template.');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore, type Show } from '../store/useStore';
-import { X } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 
 export const EditShowModal = ({ show, onClose }: { show: Show; onClose: () => void }) => {
   const updateShow = useStore(state => state.updateShow);
@@ -12,21 +12,36 @@ export const EditShowModal = ({ show, onClose }: { show: Show; onClose: () => vo
   const [date, setDate] = useState(localString);
   const [tables, setTables] = useState(show.tables.toString());
   const [tableCost, setTableCost] = useState(show.tableCost.toString());
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !tables || !tableCost) return;
 
-    const [year, month, day] = date.split('-');
-    const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const [year, month, day] = date.split('-');
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
-    updateShow(show.id, {
-      name,
-      date: localDate.toISOString(),
-      tables: parseInt(tables),
-      tableCost: parseFloat(tableCost)
-    });
-    onClose();
+      await updateShow(show.id, {
+        name,
+        date: localDate.toISOString(),
+        tables: parseInt(tables),
+        tableCost: parseFloat(tableCost)
+      });
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'permission-denied') {
+        setError("You don't have permission to perform this action.");
+      } else {
+        setError(err.message || 'Failed to update show. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -42,6 +57,13 @@ export const EditShowModal = ({ show, onClose }: { show: Show; onClose: () => vo
         <h2 className="text-2xl font-bold mb-6 text-gradient">Edit Show</h2>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {error && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fca5a5' }}>
+              <AlertCircle size={20} />
+              <p className="text-sm" style={{ margin: 0 }}>{error}</p>
+            </div>
+          )}
+
           <div className="form-group">
             <label>Show Name</label>
             <input
@@ -95,11 +117,11 @@ export const EditShowModal = ({ show, onClose }: { show: Show; onClose: () => vo
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-            <button type="button" className="glass-button" onClick={onClose}>
+            <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </button>
-            <button type="submit" className="glass-button primary">
-              Save Changes
+            <button type="submit" className="glass-button primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

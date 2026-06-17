@@ -2,12 +2,15 @@ import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import { useStore } from '../store/useStore';
 import { TrendingUp, Package, WalletCards, Calendar, BarChart3 } from 'lucide-react';
+import { auth } from '../config/firebase';
 
 export const Dashboard = () => {
   const sales = useStore(state => state.sales);
   const inventory = useStore(state => state.inventory);
   const shows = useStore(state => state.shows);
+  const shifts = useStore(state => state.shifts);
   const currentYear = new Date().getFullYear();
+  const isMe = auth.currentUser?.uid === 'seb1kmB5PShfhzPdQLyD38SwQbl2';
 
   const stats = useMemo(() => {
     // 1. Inventory counts
@@ -29,8 +32,28 @@ export const Dashboard = () => {
       month: new Date(currentYear, i, 1).toLocaleString('default', { month: 'short' }),
       revenue: 0,
       cogs: 0,
-      profit: 0
+      profit: 0,
+      payroll: 0,
+      yourProfit: 0
     }));
+
+    // 4.5. Payroll stats
+    let lifetimePayroll = 0;
+    let ytdPayroll = 0;
+
+    shifts.forEach(shift => {
+      const payout = (shift.hours * shift.hourlyRate) + (shift.bonus || 0);
+      const shiftDate = new Date(shift.date);
+      const year = shiftDate.getFullYear();
+      const month = shiftDate.getMonth();
+
+      lifetimePayroll += payout;
+
+      if (year === currentYear) {
+        ytdPayroll += payout;
+        monthlyData[month].payroll += payout;
+      }
+    });
 
     // 5. Show performance
     const showPerformanceMap: Record<string, { showName: string, revenue: number, cogs: number, profit: number }> = {};
@@ -75,17 +98,31 @@ export const Dashboard = () => {
 
     const lifetimeProfit = lifetimeRevenue - lifetimeCogs;
     const ytdProfit = ytdRevenue - ytdCogs;
+    
+    monthlyData.forEach(data => {
+      data.yourProfit = data.profit - data.payroll;
+    });
 
     const showPerformanceList = Object.values(showPerformanceMap).sort((a, b) => b.profit - a.profit);
 
     return {
       inventory: { slabs: slabCount, raws: rawCount, sealed: sealedCount, total: inStock.length },
-      lifetime: { revenue: lifetimeRevenue, cogs: lifetimeCogs, profit: lifetimeProfit },
-      ytd: { revenue: ytdRevenue, cogs: ytdCogs, profit: ytdProfit },
+      lifetime: { 
+        revenue: lifetimeRevenue, 
+        cogs: lifetimeCogs, 
+        profit: lifetimeProfit,
+        yourProfit: lifetimeProfit - lifetimePayroll
+      },
+      ytd: { 
+        revenue: ytdRevenue, 
+        cogs: ytdCogs, 
+        profit: ytdProfit,
+        yourProfit: ytdProfit - ytdPayroll
+      },
       monthlyData,
       showPerformance: showPerformanceList
     };
-  }, [sales, inventory, shows, currentYear]);
+  }, [sales, inventory, shows, shifts, currentYear]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -156,6 +193,12 @@ export const Dashboard = () => {
               <span className="font-medium text-success">Net Profit (All Time)</span>
               <span className="text-2xl font-bold text-success">${stats.lifetime.profit.toFixed(2)}</span>
             </div>
+            {isMe && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(52, 211, 153, 0.2)', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.4)' }}>
+                <span className="font-bold" style={{ color: '#6ee7b7' }}>Your Profit (Net - Payroll)</span>
+                <span className="text-2xl font-bold" style={{ color: '#6ee7b7' }}>${stats.lifetime.yourProfit.toFixed(2)}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -177,6 +220,12 @@ export const Dashboard = () => {
               <span className="font-medium" style={{ color: '#60a5fa' }}>Net Profit (YTD)</span>
               <span className="text-2xl font-bold" style={{ color: '#60a5fa' }}>${stats.ytd.profit.toFixed(2)}</span>
             </div>
+            {isMe && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(147, 197, 253, 0.2)', borderRadius: '8px', border: '1px solid rgba(147, 197, 253, 0.4)' }}>
+                <span className="font-bold" style={{ color: '#bfdbfe' }}>Your Profit (Net - Payroll)</span>
+                <span className="text-2xl font-bold" style={{ color: '#bfdbfe' }}>${stats.ytd.yourProfit.toFixed(2)}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -198,6 +247,7 @@ export const Dashboard = () => {
               <Bar dataKey="revenue" name="Revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               <Bar dataKey="cogs" name="COGS" fill="#f87171" radius={[4, 4, 0, 0]} />
               <Bar dataKey="profit" name="Net Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
+              {isMe && <Bar dataKey="yourProfit" name="Your Profit" fill="#6ee7b7" radius={[4, 4, 0, 0]} />}
             </BarChart>
           </ResponsiveContainer>
         </div>
