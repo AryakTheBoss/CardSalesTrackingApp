@@ -16,6 +16,7 @@ export interface Card {
   gradingCompany?: string;
   grade?: string;
   condition?: string;
+  quantity?: number;
 }
 
 export interface Sale {
@@ -25,6 +26,7 @@ export interface Sale {
   date: string;
   notes: string;
   showId?: string;
+  quantitySold?: number;
 }
 
 export interface Show {
@@ -134,7 +136,8 @@ export const useStore = create<AppState>()((set, get) => ({
       ...card,
       id: generateId(),
       status: 'in-stock',
-      dateAdded: new Date().toISOString()
+      dateAdded: new Date().toISOString(),
+      quantity: card.quantity || 1
     };
     await setDoc(doc(db, 'inventory', newCard.id), newCard);
   },
@@ -169,22 +172,55 @@ export const useStore = create<AppState>()((set, get) => ({
       ...sale,
       id: generateId(),
       date: sale.date ? new Date(sale.date).toISOString() : new Date().toISOString(),
+      quantitySold: sale.quantitySold || 1,
     };
     
+    const state = get();
+    const card = state.inventory.find(c => c.id === newSale.cardId);
+    const currentQty = card?.quantity ?? 1;
+    const newQty = currentQty - (newSale.quantitySold || 1);
+
     const batch = writeBatch(db);
     batch.set(doc(db, 'sales', newSale.id), newSale);
-    batch.update(doc(db, 'inventory', newSale.cardId), { status: 'sold' });
+    batch.update(doc(db, 'inventory', newSale.cardId), { 
+      status: newQty <= 0 ? 'sold' : 'in-stock',
+      quantity: newQty
+    });
     await batch.commit();
   },
 
   updateSale: async (id, saleData) => {
+    const state = get();
+    const existingSale = state.sales.find(s => s.id === id);
+    if (!existingSale) return;
+
     const sanitizedData = { ...saleData } as any;
     Object.keys(sanitizedData).forEach(key => {
       if (sanitizedData[key] === undefined) {
         sanitizedData[key] = deleteField();
       }
     });
-    await updateDoc(doc(db, 'sales', id), sanitizedData);
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'sales', id), sanitizedData);
+
+    if (saleData.quantitySold !== undefined && saleData.quantitySold !== existingSale.quantitySold) {
+      const card = state.inventory.find(c => c.id === existingSale.cardId);
+      if (card) {
+        const oldQtySold = existingSale.quantitySold || 1;
+        const newQtySold = saleData.quantitySold;
+        const diff = newQtySold - oldQtySold;
+        const currentQty = card.quantity ?? 1;
+        const newInventoryQty = currentQty - diff;
+
+        batch.update(doc(db, 'inventory', existingSale.cardId), {
+          quantity: newInventoryQty,
+          status: newInventoryQty <= 0 ? 'sold' : 'in-stock'
+        });
+      }
+    }
+
+    await batch.commit();
   },
 
   deleteSale: async (id) => {
@@ -192,9 +228,20 @@ export const useStore = create<AppState>()((set, get) => ({
     const sale = state.sales.find(s => s.id === id);
     if (!sale) return;
 
+    const card = state.inventory.find(c => c.id === sale.cardId);
+
     const batch = writeBatch(db);
     batch.delete(doc(db, 'sales', id));
-    batch.update(doc(db, 'inventory', sale.cardId), { status: 'in-stock' });
+    
+    if (card) {
+      const currentQty = card.quantity ?? 0;
+      const newQty = currentQty + (sale.quantitySold || 1);
+      batch.update(doc(db, 'inventory', sale.cardId), { 
+        status: 'in-stock',
+        quantity: newQty
+      });
+    }
+
     await batch.commit();
   },
 

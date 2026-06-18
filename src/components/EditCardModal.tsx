@@ -13,6 +13,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
   
   const [name, setName] = useState(card.name);
   const [pricePaid, setPricePaid] = useState(card.pricePaid.toString());
+  const [quantity, setQuantity] = useState((card.quantity || 1).toString());
   const [type, setType] = useState<CardType>(card.type);
   const [gradingCompany, setGradingCompany] = useState(card.gradingCompany || '');
   const [grade, setGrade] = useState(card.grade || '');
@@ -31,6 +32,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
       await updateCard(card.id, {
       name,
       pricePaid: parseFloat(pricePaid),
+      quantity: parseInt(quantity) || 1,
       type,
       notes,
       ...(type === 'slab' ? { gradingCompany, grade, condition: undefined } : {}),
@@ -99,17 +101,32 @@ export const EditCardModal = ({ card, onClose }: Props) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Price Paid ($)</label>
-            <input 
-              type="number" 
-              step="0.01"
-              className="glass-input" 
-              placeholder="0.00"
-              value={pricePaid}
-              onChange={e => setPricePaid(e.target.value)}
-              required
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Price Paid (Per Unit) ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                className="glass-input" 
+                placeholder="0.00"
+                value={pricePaid}
+                onChange={e => setPricePaid(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Quantity</label>
+              <input 
+                type="number" 
+                min="1"
+                step="1"
+                className="glass-input" 
+                placeholder="1"
+                value={quantity}
+                onChange={e => setQuantity(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">

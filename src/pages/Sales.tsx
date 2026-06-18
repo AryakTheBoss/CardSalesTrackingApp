@@ -31,20 +31,25 @@ export const Sales = () => {
     if (sortOption === 'date-desc') return new Date(b.date).getTime() - new Date(a.date).getTime();
     if (sortOption === 'date-asc') return new Date(a.date).getTime() - new Date(b.date).getTime();
     
-    if (sortOption === 'sale-desc') return b.soldPrice - a.soldPrice;
-    if (sortOption === 'sale-asc') return a.soldPrice - b.soldPrice;
+    const qtyA = a.quantitySold || 1;
+    const qtyB = b.quantitySold || 1;
+    const revA = a.soldPrice * qtyA;
+    const revB = b.soldPrice * qtyB;
+
+    if (sortOption === 'sale-desc') return revB - revA;
+    if (sortOption === 'sale-asc') return revA - revB;
     
     const cardA = inventory.find(c => c.id === a.cardId);
     const cardB = inventory.find(c => c.id === b.cardId);
     
-    const buyA = cardA ? cardA.pricePaid : 0;
-    const buyB = cardB ? cardB.pricePaid : 0;
+    const buyA = (cardA ? cardA.pricePaid : 0) * qtyA;
+    const buyB = (cardB ? cardB.pricePaid : 0) * qtyB;
     
     if (sortOption === 'buy-desc') return buyB - buyA;
     if (sortOption === 'buy-asc') return buyA - buyB;
     
-    const profitA = a.soldPrice - buyA;
-    const profitB = b.soldPrice - buyB;
+    const profitA = revA - buyA;
+    const profitB = revB - buyB;
     
     if (sortOption === 'profit-desc') return profitB - profitA;
     if (sortOption === 'profit-asc') return profitA - profitB;
@@ -116,7 +121,10 @@ export const Sales = () => {
                 const show = shows.find(s => s.id === sale.showId);
                 const isHardcodedShow = sale.showId === 'Non-vended show' || sale.showId === 'Online/Discord';
                 const showName = show ? show.name : (isHardcodedShow ? sale.showId : null);
-                const profit = card ? sale.soldPrice - card.pricePaid : 0;
+                
+                const qtySold = sale.quantitySold || 1;
+                const profitPerUnit = card ? sale.soldPrice - card.pricePaid : 0;
+                const totalProfit = profitPerUnit * qtySold;
                 
                 return (
                   <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
@@ -134,11 +142,17 @@ export const Sales = () => {
                     <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
                       {new Date(sale.date).toLocaleDateString()}
                     </td>
-                    <td style={{ padding: '1rem' }}>${card?.pricePaid.toFixed(2)}</td>
-                    <td style={{ padding: '1rem' }}>${sale.soldPrice.toFixed(2)}</td>
                     <td style={{ padding: '1rem' }}>
-                      <span className={profit >= 0 ? 'text-success' : 'text-danger'} style={{ fontWeight: '600' }}>
-                        {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
+                      ${card?.pricePaid.toFixed(2)}
+                      {qtySold > 1 && <span className="text-xs text-secondary ml-1">ea</span>}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      {qtySold > 1 && <span className="text-secondary mr-1 font-medium">({qtySold}x)</span>}
+                      ${sale.soldPrice.toFixed(2)}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <span className={totalProfit >= 0 ? 'text-success' : 'text-danger'} style={{ fontWeight: '600' }}>
+                        {totalProfit >= 0 ? '+' : '-'}${Math.abs(totalProfit).toFixed(2)}
                       </span>
                     </td>
                     {!isGuest && (

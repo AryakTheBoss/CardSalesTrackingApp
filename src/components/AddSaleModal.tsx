@@ -15,6 +15,8 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [soldPrice, setSoldPrice] = useState('');
+  const [quantitySold, setQuantitySold] = useState('1');
+  const [availableQty, setAvailableQty] = useState(1);
   const today = new Date();
   const localTodayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [date, setDate] = useState(localTodayString);
@@ -47,6 +49,8 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const handleSelectCard = (card: any) => {
     setCardId(card.id);
     setSearchQuery(card.name);
+    setAvailableQty(card.quantity || 1);
+    setQuantitySold('1');
     setIsOpen(false);
   };
 
@@ -69,6 +73,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
       await addSale({
         cardId,
         soldPrice: parseFloat(soldPrice),
+        quantitySold: parseInt(quantitySold) || 1,
         date: localDate.toISOString(),
         notes,
         ...(showId ? { showId } : {})
@@ -148,7 +153,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
                     >
                       <div className="font-medium">{card.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        Paid: ${card.pricePaid.toFixed(2)} 
+                        Qty: {card.quantity || 1} • Paid: ${card.pricePaid.toFixed(2)} 
                         {card.type === 'slab' && (card.gradingCompany || card.grade) ? ` • ${card.gradingCompany} ${card.grade}` : ''}
                         {card.type === 'raw' && card.condition ? ` • ${card.condition}` : ''}
                       </div>
@@ -163,17 +168,36 @@ export const AddSaleModal = ({ onClose }: Props) => {
             )}
           </div>
 
-          <div className="form-group">
-            <label>Sold Price ($)</label>
-            <input 
-              type="number" 
-              step="0.01"
-              className="glass-input" 
-              placeholder="0.00"
-              value={soldPrice}
-              onChange={e => setSoldPrice(e.target.value)}
-              required
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Sold Price (Per Unit) ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                className="glass-input" 
+                placeholder="0.00"
+                value={soldPrice}
+                onChange={e => setSoldPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            {cardId && (
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Quantity Sold (Max: {availableQty})</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  max={availableQty}
+                  step="1"
+                  className="glass-input" 
+                  placeholder="1"
+                  value={quantitySold}
+                  onChange={e => setQuantitySold(e.target.value)}
+                  required
+                />
+              </div>
+            )}
           </div>
 
           <div className="form-group">

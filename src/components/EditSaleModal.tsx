@@ -17,6 +17,7 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
   const localString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   
   const [soldPrice, setSoldPrice] = useState(sale.soldPrice.toString());
+  const [quantitySold, setQuantitySold] = useState((sale.quantitySold || 1).toString());
   const [date, setDate] = useState(localString);
   const [notes, setNotes] = useState(sale.notes || '');
   const [showId, setShowId] = useState(sale.showId || '');
@@ -24,6 +25,7 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const card = inventory.find(c => c.id === sale.cardId);
+  const maxAvailableQty = (card?.quantity || 0) + (sale.quantitySold || 1);
 
   useEffect(() => {
     if (!date) return;
@@ -53,6 +55,7 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
 
       await updateSale(sale.id, {
         soldPrice: parseFloat(soldPrice),
+        quantitySold: parseInt(quantitySold) || 1,
         date: localDate.toISOString(),
         notes,
         showId: showId || undefined
@@ -118,17 +121,34 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Sold Price ($)</label>
-            <input 
-              type="number" 
-              step="0.01"
-              className="glass-input" 
-              placeholder="0.00"
-              value={soldPrice}
-              onChange={e => setSoldPrice(e.target.value)}
-              required
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Sold Price (Per Unit) ($)</label>
+              <input 
+                type="number" 
+                step="0.01"
+                className="glass-input" 
+                placeholder="0.00"
+                value={soldPrice}
+                onChange={e => setSoldPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Quantity Sold (Max: {maxAvailableQty})</label>
+              <input 
+                type="number" 
+                min="1"
+                max={maxAvailableQty}
+                step="1"
+                className="glass-input" 
+                placeholder="1"
+                value={quantitySold}
+                onChange={e => setQuantitySold(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="form-group">

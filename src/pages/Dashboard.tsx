@@ -15,9 +15,10 @@ export const Dashboard = () => {
   const stats = useMemo(() => {
     // 1. Inventory counts
     const inStock = inventory.filter(c => c.status === 'in-stock');
-    const slabCount = inStock.filter(c => c.type === 'slab').length;
-    const rawCount = inStock.filter(c => c.type === 'raw').length;
-    const sealedCount = inStock.filter(c => c.type === 'sealed').length;
+    const slabCount = inStock.filter(c => c.type === 'slab').reduce((acc, c) => acc + (c.quantity || 1), 0);
+    const rawCount = inStock.filter(c => c.type === 'raw').reduce((acc, c) => acc + (c.quantity || 1), 0);
+    const sealedCount = inStock.filter(c => c.type === 'sealed').reduce((acc, c) => acc + (c.quantity || 1), 0);
+    const totalCount = inStock.reduce((acc, c) => acc + (c.quantity || 1), 0);
 
     // 2. All-time stats
     let lifetimeRevenue = 0;
@@ -66,18 +67,23 @@ export const Dashboard = () => {
       const year = saleDate.getFullYear();
       const month = saleDate.getMonth();
 
+      const saleQty = sale.quantitySold || 1;
+      const cogsForSale = card.pricePaid * saleQty;
+      const revenueForSale = sale.soldPrice * saleQty;
+      const profitForSale = revenueForSale - cogsForSale;
+
       // All time
-      lifetimeRevenue += sale.soldPrice;
-      lifetimeCogs += card.pricePaid;
+      lifetimeRevenue += revenueForSale;
+      lifetimeCogs += cogsForSale;
 
       // YTD & Monthly
       if (year === currentYear) {
-        ytdRevenue += sale.soldPrice;
-        ytdCogs += card.pricePaid;
+        ytdRevenue += revenueForSale;
+        ytdCogs += cogsForSale;
 
-        monthlyData[month].revenue += sale.soldPrice;
-        monthlyData[month].cogs += card.pricePaid;
-        monthlyData[month].profit += (sale.soldPrice - card.pricePaid);
+        monthlyData[month].revenue += revenueForSale;
+        monthlyData[month].cogs += cogsForSale;
+        monthlyData[month].profit += profitForSale;
       }
 
       // Show specific
@@ -90,9 +96,9 @@ export const Dashboard = () => {
           showPerformanceMap[sale.showId] = { showName, revenue: 0, cogs: 0, profit: 0 };
         }
 
-        showPerformanceMap[sale.showId].revenue += sale.soldPrice;
-        showPerformanceMap[sale.showId].cogs += card.pricePaid;
-        showPerformanceMap[sale.showId].profit += (sale.soldPrice - card.pricePaid);
+        showPerformanceMap[sale.showId].revenue += revenueForSale;
+        showPerformanceMap[sale.showId].cogs += cogsForSale;
+        showPerformanceMap[sale.showId].profit += profitForSale;
       }
     });
 
@@ -106,7 +112,7 @@ export const Dashboard = () => {
     const showPerformanceList = Object.values(showPerformanceMap).sort((a, b) => b.profit - a.profit);
 
     return {
-      inventory: { slabs: slabCount, raws: rawCount, sealed: sealedCount, total: inStock.length },
+      inventory: { slabs: slabCount, raws: rawCount, sealed: sealedCount, total: totalCount },
       lifetime: { 
         revenue: lifetimeRevenue, 
         cogs: lifetimeCogs, 
