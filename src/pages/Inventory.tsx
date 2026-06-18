@@ -116,6 +116,11 @@ export const Inventory = () => {
                       Qty: {card.quantity}
                     </span>
                   )}
+                  {card.isTrade && (
+                    <span style={{ display: 'inline-block', fontSize: '0.75rem', marginLeft: '0.5rem', marginTop: '0.1rem', background: 'rgba(236, 72, 153, 0.2)', color: '#f472b6', padding: '0.15rem 0.4rem', borderRadius: '4px', verticalAlign: 'middle', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                      Trade
+                    </span>
+                  )}
                 </h3>
                 <span className="text-success font-semibold text-sm" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                   ${card.pricePaid.toFixed(2)}

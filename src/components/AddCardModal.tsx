@@ -10,6 +10,7 @@ export const AddCardModal = ({ onClose }: Props) => {
   const addCard = useStore(state => state.addCard);
   const [name, setName] = useState('');
   const [pricePaid, setPricePaid] = useState('');
+  const [isTrade, setIsTrade] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const [type, setType] = useState<CardType>('raw');
   const [gradingCompany, setGradingCompany] = useState('');
@@ -27,13 +28,14 @@ export const AddCardModal = ({ onClose }: Props) => {
       setError(null);
       setIsSubmitting(true);
       await addCard({
-      name,
-      pricePaid: parseFloat(pricePaid),
-      quantity: parseInt(quantity) || 1,
-      type,
-      notes,
-      ...(type === 'slab' ? { gradingCompany, grade } : {}),
-      ...(type === 'raw' ? { condition } : {})
+        name,
+        pricePaid: parseFloat(pricePaid),
+        quantity: parseInt(quantity) || 1,
+        type,
+        notes,
+        isTrade,
+        ...(type === 'slab' ? { gradingCompany, grade } : {}),
+        ...(type === 'raw' ? { condition } : {})
       });
       onClose();
     } catch (err: any) {
@@ -76,6 +78,17 @@ export const AddCardModal = ({ onClose }: Props) => {
               onChange={e => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input 
+              type="checkbox" 
+              id="isTrade" 
+              checked={isTrade} 
+              onChange={e => setIsTrade(e.target.checked)} 
+              style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+            />
+            <label htmlFor="isTrade" style={{ margin: 0, cursor: 'pointer' }}>Acquired via Trade?</label>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

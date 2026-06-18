@@ -17,6 +17,7 @@ export interface Card {
   grade?: string;
   condition?: string;
   quantity?: number;
+  isTrade?: boolean;
 }
 
 export interface Sale {
@@ -27,6 +28,7 @@ export interface Sale {
   notes: string;
   showId?: string;
   quantitySold?: number;
+  isTrade?: boolean;
 }
 
 export interface Show {

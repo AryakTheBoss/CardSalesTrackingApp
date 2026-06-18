@@ -13,6 +13,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
   
   const [name, setName] = useState(card.name);
   const [pricePaid, setPricePaid] = useState(card.pricePaid.toString());
+  const [isTrade, setIsTrade] = useState(card.isTrade || false);
   const [quantity, setQuantity] = useState((card.quantity || 1).toString());
   const [type, setType] = useState<CardType>(card.type);
   const [gradingCompany, setGradingCompany] = useState(card.gradingCompany || '');
@@ -30,15 +31,16 @@ export const EditCardModal = ({ card, onClose }: Props) => {
       setError(null);
       setIsSubmitting(true);
       await updateCard(card.id, {
-      name,
-      pricePaid: parseFloat(pricePaid),
-      quantity: parseInt(quantity) || 1,
-      type,
-      notes,
-      ...(type === 'slab' ? { gradingCompany, grade, condition: undefined } : {}),
-      ...(type === 'raw' ? { condition, gradingCompany: undefined, grade: undefined } : {}),
-      ...(type === 'raw' ? { condition, gradingCompany: undefined, grade: undefined } : {})
-      });
+        name,
+        pricePaid: parseFloat(pricePaid),
+        quantity: parseInt(quantity) || 1,
+        type,
+        notes,
+        isTrade,
+        cashPaid: null, // clear lingering data
+        ...(type === 'slab' ? { gradingCompany, grade, condition: null } : {}),
+        ...(type === 'raw' ? { condition, gradingCompany: null, grade: null } : {})
+      } as any);
       onClose();
     } catch (err: any) {
       console.error(err);
@@ -99,6 +101,17 @@ export const EditCardModal = ({ card, onClose }: Props) => {
               onChange={e => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input 
+              type="checkbox" 
+              id="isTrade" 
+              checked={isTrade} 
+              onChange={e => setIsTrade(e.target.checked)} 
+              style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+            />
+            <label htmlFor="isTrade" style={{ margin: 0, cursor: 'pointer' }}>Acquired via Trade?</label>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

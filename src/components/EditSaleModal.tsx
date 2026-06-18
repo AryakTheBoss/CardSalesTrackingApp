@@ -17,6 +17,7 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
   const localString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   
   const [soldPrice, setSoldPrice] = useState(sale.soldPrice.toString());
+  const [isTrade, setIsTrade] = useState(sale.isTrade || false);
   const [quantitySold, setQuantitySold] = useState((sale.quantitySold || 1).toString());
   const [date, setDate] = useState(localString);
   const [notes, setNotes] = useState(sale.notes || '');
@@ -58,8 +59,10 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
         quantitySold: parseInt(quantitySold) || 1,
         date: localDate.toISOString(),
         notes,
+        isTrade,
+        cashReceived: null, // clear lingering data
         showId: showId || undefined
-      });
+      } as any);
       onClose();
     } catch (err: any) {
       console.error(err);
@@ -119,6 +122,17 @@ export const EditSaleModal = ({ sale, onClose }: Props) => {
               disabled
               style={{ opacity: 0.7, cursor: 'not-allowed' }}
             />
+          </div>
+
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input 
+              type="checkbox" 
+              id="isTrade" 
+              checked={isTrade} 
+              onChange={e => setIsTrade(e.target.checked)} 
+              style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+            />
+            <label htmlFor="isTrade" style={{ margin: 0, cursor: 'pointer' }}>Sold via Trade?</label>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

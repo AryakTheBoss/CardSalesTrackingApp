@@ -136,6 +136,11 @@ export const Sales = () => {
                             {sale.showId === 'Online/Discord' ? '💻' : '🎪'} {showName}
                           </span>
                         )}
+                        {sale.isTrade && (
+                          <span style={{ background: 'rgba(139, 92, 246, 0.2)', color: '#a78bfa', padding: '0.1rem 0.4rem', borderRadius: '4px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                            🔄 Traded
+                          </span>
+                        )}
                         <span>{sale.notes}</span>
                       </div>
                     </td>

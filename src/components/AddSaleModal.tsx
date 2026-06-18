@@ -15,6 +15,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [soldPrice, setSoldPrice] = useState('');
+  const [isTrade, setIsTrade] = useState(false);
   const [quantitySold, setQuantitySold] = useState('1');
   const [availableQty, setAvailableQty] = useState(1);
   const today = new Date();
@@ -76,6 +77,7 @@ export const AddSaleModal = ({ onClose }: Props) => {
         quantitySold: parseInt(quantitySold) || 1,
         date: localDate.toISOString(),
         notes,
+        isTrade,
         ...(showId ? { showId } : {})
       });
       onClose();
@@ -166,6 +168,17 @@ export const AddSaleModal = ({ onClose }: Props) => {
                 )}
               </div>
             )}
+          </div>
+
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input 
+              type="checkbox" 
+              id="isTrade" 
+              checked={isTrade} 
+              onChange={e => setIsTrade(e.target.checked)} 
+              style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+            />
+            <label htmlFor="isTrade" style={{ margin: 0, cursor: 'pointer' }}>Sold via Trade?</label>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
