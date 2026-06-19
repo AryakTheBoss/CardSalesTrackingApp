@@ -17,6 +17,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const initializeFirebaseListeners = useStore(state => state.initializeFirebaseListeners);
   const setIsGuest = useStore(state => state.setIsGuest);
+  const isDemoMode = useStore(state => state.isDemoMode);
 
   useEffect(() => {
     let unsubscribeListeners: (() => void) | undefined;
@@ -51,7 +52,7 @@ function App() {
     <ErrorBoundary>
       <HashRouter>
         <Routes>
-          {!user ? (
+          {!user && !isDemoMode ? (
             <Route path="*" element={<Login />} />
           ) : (
             <Route path="/" element={<AppLayout />}>

@@ -57,8 +57,10 @@ interface AppState {
   shifts: Shift[];
   isFirebaseInitialized: boolean;
   isGuest: boolean;
+  isDemoMode: boolean;
   firebaseError: string | null;
   setIsGuest: (isGuest: boolean) => void;
+  setIsDemoMode: (isDemo: boolean) => void;
   setFirebaseError: (error: string | null) => void;
   initializeFirebaseListeners: () => () => void;
   addCard: (card: Omit<Card, 'id' | 'status' | 'dateAdded'>) => Promise<void>;
@@ -90,12 +92,47 @@ export const useStore = create<AppState>()((set, get) => ({
   shifts: [],
   isFirebaseInitialized: false,
   isGuest: false,
+  isDemoMode: false,
   firebaseError: null,
 
   setIsGuest: (isGuest) => set({ isGuest }),
+  setIsDemoMode: (isDemoMode) => {
+    if (isDemoMode) {
+      // Load dummy data
+      const c1: Card = { id: 'd-c1', name: 'Charizard Base Set', pricePaid: 150, type: 'raw', condition: 'LP', status: 'in-stock', dateAdded: new Date(Date.now() - 864000000).toISOString(), quantity: 1, notes: '' };
+      const c2: Card = { id: 'd-c2', name: 'Lugia 1st Edition', pricePaid: 800, type: 'slab', gradingCompany: 'PSA', grade: '9', status: 'in-stock', dateAdded: new Date(Date.now() - 400000000).toISOString(), quantity: 1, notes: '' };
+      const c3: Card = { id: 'd-c3', name: 'Umbreon VMAX Alt Art', pricePaid: 450, type: 'raw', condition: 'NM', status: 'sold', dateAdded: new Date(Date.now() - 600000000).toISOString(), quantity: 0, notes: '' };
+      const c4: Card = { id: 'd-c4', name: 'Rayquaza Gold Star', pricePaid: 1200, type: 'slab', gradingCompany: 'BGS', grade: '9.5', status: 'sold', dateAdded: new Date(Date.now() - 700000000).toISOString(), quantity: 0, notes: '' };
+      const c5: Card = { id: 'd-c5', name: '151 Booster Bundle', pricePaid: 25, type: 'sealed', status: 'in-stock', dateAdded: new Date(Date.now() - 100000000).toISOString(), quantity: 5, notes: '' };
+
+      const s1: Sale = { id: 'd-s1', cardId: 'd-c3', soldPrice: 650, date: new Date(Date.now() - 200000000).toISOString(), notes: 'eBay sale' };
+      const s2: Sale = { id: 'd-s2', cardId: 'd-c4', soldPrice: 1800, date: new Date(Date.now() - 300000000).toISOString(), notes: 'Discord deal' };
+      const s3: Sale = { id: 'd-s3', cardId: 'd-c5', soldPrice: 45, date: new Date(Date.now() - 50000000).toISOString(), notes: 'Local trade', quantitySold: 1, isTrade: true };
+      const s4: Sale = { id: 'd-s4', cardId: 'd-c5', soldPrice: 45, date: new Date(Date.now() - 40000000).toISOString(), notes: 'Local deal', quantitySold: 1 };
+      const s5: Sale = { id: 'd-s5', cardId: 'd-c5', soldPrice: 40, date: new Date(Date.now() - 30000000).toISOString(), notes: 'Bulk discount', quantitySold: 2 };
+      const show1: Show = { id: 'd-show1', name: 'Collect-A-Con', date: new Date(Date.now() + 864000000).toISOString(), tables: 2, tableCost: 350 };
+      const shift1: Shift = { id: 'd-shift1', employee: 'Tae', showId: 'd-show1', date: new Date(Date.now() + 864000000).toISOString(), hours: 8, hourlyRate: 15, bonus: 0, status: 'Pending' };
+      
+      set({ 
+        isDemoMode: true, 
+        inventory: [c1, c2, c3, c4, c5], 
+        sales: [s1, s2, s3, s4, s5], 
+        shows: [show1], 
+        shifts: [shift1], 
+        isFirebaseInitialized: true 
+      });
+    } else {
+      set({ isDemoMode: false, inventory: [], sales: [], shows: [], shifts: [] });
+    }
+  },
   setFirebaseError: (firebaseError) => set({ firebaseError }),
 
   initializeFirebaseListeners: () => {
+    if (get().isDemoMode) {
+      set({ isFirebaseInitialized: true });
+      return () => {};
+    }
+
     const handleSnapshotError = (error: any) => {
       console.error("Firebase Snapshot Error:", error);
       if (error.code === 'permission-denied') {
@@ -141,6 +178,12 @@ export const useStore = create<AppState>()((set, get) => ({
       dateAdded: new Date().toISOString(),
       quantity: card.quantity || 1
     };
+    
+    if (get().isDemoMode) {
+      set(state => ({ inventory: [...state.inventory, newCard] }));
+      return;
+    }
+
     await setDoc(doc(db, 'inventory', newCard.id), newCard);
   },
 
@@ -152,13 +195,29 @@ export const useStore = create<AppState>()((set, get) => ({
         sanitizedData[key] = deleteField();
       }
     });
+
+    if (get().isDemoMode) {
+      set(state => ({
+        inventory: state.inventory.map(c => c.id === id ? { ...c, ...cardData } : c)
+      }));
+      return;
+    }
+
     await updateDoc(doc(db, 'inventory', id), sanitizedData);
   },
 
   deleteCard: async (id) => {
+    const state = get();
+    if (state.isDemoMode) {
+      set(s => ({
+        inventory: s.inventory.filter(c => c.id !== id),
+        sales: s.sales.filter(sale => sale.cardId !== id)
+      }));
+      return;
+    }
+
     await deleteDoc(doc(db, 'inventory', id));
     // Also delete associated sales
-    const state = get();
     const associatedSales = state.sales.filter(s => s.cardId === id);
     if (associatedSales.length > 0) {
       const batch = writeBatch(db);
@@ -181,6 +240,18 @@ export const useStore = create<AppState>()((set, get) => ({
     const card = state.inventory.find(c => c.id === newSale.cardId);
     const currentQty = card?.quantity ?? 1;
     const newQty = currentQty - (newSale.quantitySold || 1);
+
+    if (state.isDemoMode) {
+      set(s => ({
+        sales: [...s.sales, newSale],
+        inventory: s.inventory.map(c => 
+          c.id === newSale.cardId 
+            ? { ...c, status: newQty <= 0 ? 'sold' : 'in-stock', quantity: newQty } 
+            : c
+        )
+      }));
+      return;
+    }
 
     const batch = writeBatch(db);
     batch.set(doc(db, 'sales', newSale.id), newSale);
@@ -222,6 +293,28 @@ export const useStore = create<AppState>()((set, get) => ({
       }
     }
 
+    if (state.isDemoMode) {
+      set(s => {
+        let newInventory = [...s.inventory];
+        if (saleData.quantitySold !== undefined && saleData.quantitySold !== existingSale.quantitySold) {
+          const card = newInventory.find(c => c.id === existingSale.cardId);
+          if (card) {
+            const oldQtySold = existingSale.quantitySold || 1;
+            const diff = saleData.quantitySold - oldQtySold;
+            const currentQty = card.quantity ?? 1;
+            const newInventoryQty = currentQty - diff;
+            card.quantity = newInventoryQty;
+            card.status = newInventoryQty <= 0 ? 'sold' : 'in-stock';
+          }
+        }
+        return {
+          sales: s.sales.map(sItem => sItem.id === id ? { ...sItem, ...saleData } : sItem),
+          inventory: newInventory
+        };
+      });
+      return;
+    }
+
     await batch.commit();
   },
 
@@ -238,10 +331,24 @@ export const useStore = create<AppState>()((set, get) => ({
     if (card) {
       const currentQty = card.quantity ?? 0;
       const newQty = currentQty + (sale.quantitySold || 1);
+      
+      if (state.isDemoMode) {
+        set(s => ({
+          sales: s.sales.filter(sItem => sItem.id !== id),
+          inventory: s.inventory.map(c => 
+            c.id === sale.cardId ? { ...c, status: 'in-stock', quantity: newQty } : c
+          )
+        }));
+        return;
+      }
+
       batch.update(doc(db, 'inventory', sale.cardId), { 
         status: 'in-stock',
         quantity: newQty
       });
+    } else if (state.isDemoMode) {
+      set(s => ({ sales: s.sales.filter(sItem => sItem.id !== id) }));
+      return;
     }
 
     await batch.commit();
@@ -252,6 +359,12 @@ export const useStore = create<AppState>()((set, get) => ({
       ...show,
       id: generateId(),
     };
+
+    if (get().isDemoMode) {
+      set(state => ({ shows: [...state.shows, newShow] }));
+      return;
+    }
+
     await setDoc(doc(db, 'shows', newShow.id), newShow);
   },
 
@@ -262,10 +375,22 @@ export const useStore = create<AppState>()((set, get) => ({
         sanitizedData[key] = deleteField();
       }
     });
+
+    if (get().isDemoMode) {
+      set(state => ({
+        shows: state.shows.map(s => s.id === id ? { ...s, ...showData } : s)
+      }));
+      return;
+    }
+
     await updateDoc(doc(db, 'shows', id), sanitizedData);
   },
 
   deleteShow: async (id) => {
+    if (get().isDemoMode) {
+      set(state => ({ shows: state.shows.filter(s => s.id !== id) }));
+      return;
+    }
     await deleteDoc(doc(db, 'shows', id));
   },
 
@@ -274,6 +399,12 @@ export const useStore = create<AppState>()((set, get) => ({
       ...shift,
       id: generateId(),
     };
+
+    if (get().isDemoMode) {
+      set(state => ({ shifts: [...state.shifts, newShift] }));
+      return;
+    }
+
     await setDoc(doc(db, 'shifts', newShift.id), newShift);
   },
 
@@ -284,10 +415,22 @@ export const useStore = create<AppState>()((set, get) => ({
         sanitizedData[key] = deleteField();
       }
     });
+
+    if (get().isDemoMode) {
+      set(state => ({
+        shifts: state.shifts.map(s => s.id === id ? { ...s, ...shiftData } : s)
+      }));
+      return;
+    }
+
     await updateDoc(doc(db, 'shifts', id), sanitizedData);
   },
 
   deleteShift: async (id) => {
+    if (get().isDemoMode) {
+      set(state => ({ shifts: state.shifts.filter(s => s.id !== id) }));
+      return;
+    }
     await deleteDoc(doc(db, 'shifts', id));
   },
 
@@ -304,10 +447,20 @@ export const useStore = create<AppState>()((set, get) => ({
       batch.set(doc(db, 'sales', sale.id), sale);
     });
     
+    if (get().isDemoMode) {
+      set(state => ({
+        inventory: [...state.inventory, ...inventory],
+        sales: [...state.sales, ...sales]
+      }));
+      return;
+    }
+
     await batch.commit();
   },
 
   refreshData: async () => {
+    if (get().isDemoMode) return;
+
     try {
       const inventorySnapshot = await getDocs(collection(db, 'inventory'));
       const inventory = inventorySnapshot.docs.map(doc => doc.data() as Card);

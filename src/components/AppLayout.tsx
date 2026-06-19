@@ -23,6 +23,8 @@ export const AppLayout = () => {
   const refreshData = useStore(state => state.refreshData);
   const firebaseError = useStore(state => state.firebaseError);
   const setFirebaseError = useStore(state => state.setFirebaseError);
+  const isDemoMode = useStore(state => state.isDemoMode);
+  const setIsDemoMode = useStore(state => state.setIsDemoMode);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -73,16 +75,42 @@ export const AppLayout = () => {
           <button
             className="glass-button w-full flex-row justify-center items-center gap-2"
             style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
-            onClick={() => auth.signOut()}
+            onClick={() => {
+              if (isDemoMode) {
+                setIsDemoMode(false);
+              } else {
+                auth.signOut();
+              }
+            }}
           >
             <LogOut size={22} />
-            Sign Out
+            {isDemoMode ? 'Exit Demo Mode' : 'Sign Out'}
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="main-content" style={{ display: 'flex', flexDirection: 'column' }}>
+        {isDemoMode && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.2)',
+            border: '1px solid rgba(239, 68, 68, 0.5)',
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.75rem',
+            color: '#fca5a5',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)'
+          }}>
+            <AlertCircle size={20} />
+            DEMO MODE: Any data added or changed is temporary and will not be saved upon site reload.
+          </div>
+        )}
         {firebaseError && (
           <div style={{ 
             background: 'rgba(239, 68, 68, 0.1)', 

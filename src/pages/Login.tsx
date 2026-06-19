@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, PlaySquare } from 'lucide-react';
+import { useStore } from '../store/useStore';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const setIsDemoMode = useStore(state => state.setIsDemoMode);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +83,18 @@ export const Login = () => {
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
+
+        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)', textAlign: 'center' }}>
+          <p className="text-secondary text-sm mb-3">Curious about the site?</p>
+          <button 
+            onClick={() => setIsDemoMode(true)}
+            className="glass-button"
+            style={{ width: '100%', padding: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa', borderColor: 'rgba(59, 130, 246, 0.3)' }}
+          >
+            <PlaySquare size={18} />
+            View in Demo Mode
+          </button>
+        </div>
       </div>
     </div>
   );
