@@ -85,7 +85,7 @@ export const Login = () => {
         </form>
 
         <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)', textAlign: 'center' }}>
-          <p className="text-secondary text-sm mb-3">Curious about the site?</p>
+          <p className="text-secondary text-sm" style={{ marginBottom: '1rem' }}>Curious about the site?</p>
           <button 
             onClick={() => setIsDemoMode(true)}
             className="glass-button"
