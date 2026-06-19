@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore, type Sale } from '../store/useStore';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Info } from 'lucide-react';
 import { AddSaleModal } from '../components/AddSaleModal';
 import { EditSaleModal } from '../components/EditSaleModal';
+import { TradeRuleModal } from '../components/TradeRuleModal';
 
 export const Sales = () => {
   const sales = useStore(state => state.sales) || [];
@@ -11,6 +12,7 @@ export const Sales = () => {
   const deleteSale = useStore(state => state.deleteSale);
   const isGuest = useStore(state => state.isGuest);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +67,15 @@ export const Sales = () => {
           <p className="text-secondary mt-2">Track your sold cards and profits</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            className="glass-button" 
+            onClick={() => setIsHelpModalOpen(true)}
+            title="Trade Rules Help"
+            style={{ padding: '0.5rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Info size={18} />
+            <span className="hidden sm:inline">Trade Rule Help</span>
+          </button>
           <input
             type="text"
             className="glass-input"
@@ -191,6 +202,7 @@ export const Sales = () => {
       )}
 
       {isModalOpen && <AddSaleModal onClose={() => setIsModalOpen(false)} />}
+      {isHelpModalOpen && <TradeRuleModal onClose={() => setIsHelpModalOpen(false)} />}
       {selectedSale && <EditSaleModal sale={selectedSale} onClose={() => setSelectedSale(null)} />}
     </div>
   );
