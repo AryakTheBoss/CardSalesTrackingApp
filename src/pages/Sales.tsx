@@ -140,7 +140,19 @@ export const Sales = () => {
                 return (
                   <tr key={sale.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <td style={{ padding: '1rem' }}>
-                      <div className="font-medium">{card?.name || 'Unknown Card'}</div>
+                      <div className="font-medium" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span>{card?.name || 'Unknown Card'}</span>
+                        {card?.type === 'slab' && (card.gradingCompany || card.grade) && (
+                          <span style={{ background: 'rgba(139, 92, 246, 0.2)', color: 'var(--accent-primary)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                            {card.gradingCompany} {card.grade}
+                          </span>
+                        )}
+                        {card?.type === 'raw' && card.condition && (
+                          <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                            {card.condition}
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs text-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                         {showName && (
                           <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '0.1rem 0.4rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
