@@ -3,6 +3,7 @@ import { useStore, type CardType, type Card } from '../store/useStore';
 import { Plus } from 'lucide-react';
 import { AddCardModal } from '../components/AddCardModal';
 import { EditCardModal } from '../components/EditCardModal';
+import { AddSaleModal } from '../components/AddSaleModal';
 
 export const Inventory = () => {
   const inventory = useStore(state => state.inventory) || [];
@@ -10,6 +11,7 @@ export const Inventory = () => {
   const [activeTab, setActiveTab] = useState<CardType>('slab');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [sellingCardId, setSellingCardId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -151,7 +153,22 @@ export const Inventory = () => {
       )}
 
       {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} />}
-      {selectedCard && <EditCardModal card={selectedCard} onClose={() => setSelectedCard(null)} />}
+      {selectedCard && (
+        <EditCardModal 
+          card={selectedCard} 
+          onClose={() => setSelectedCard(null)} 
+          onSellClick={() => {
+            setSellingCardId(selectedCard.id);
+            setSelectedCard(null);
+          }}
+        />
+      )}
+      {sellingCardId && (
+        <AddSaleModal 
+          initialCardId={sellingCardId}
+          onClose={() => setSellingCardId(null)}
+        />
+      )}
     </div>
   );
 };

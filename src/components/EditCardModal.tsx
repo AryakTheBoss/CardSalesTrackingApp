@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { X, Trash2, AlertCircle } from 'lucide-react';
+import { X, Trash2, AlertCircle, DollarSign } from 'lucide-react';
 import { useStore, type Card, type CardType } from '../store/useStore';
 
 interface Props {
   card: Card;
   onClose: () => void;
+  onSellClick?: () => void;
 }
 
-export const EditCardModal = ({ card, onClose }: Props) => {
+export const EditCardModal = ({ card, onClose, onSellClick }: Props) => {
   const updateCard = useStore(state => state.updateCard);
   const deleteCard = useStore(state => state.deleteCard);
   
@@ -252,16 +253,29 @@ export const EditCardModal = ({ card, onClose }: Props) => {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem' }}>
-            <button 
-              type="button" 
-              className="glass-button" 
-              style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
-              onClick={handleDelete}
-              disabled={isSubmitting}
-            >
-              <Trash2 size={18} style={{ marginRight: '0.5rem' }} />
-              Delete Card
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                type="button" 
+                className="glass-button" 
+                style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)', padding: '0.5rem 1rem' }}
+                onClick={handleDelete}
+                disabled={isSubmitting}
+              >
+                <Trash2 size={18} />
+              </button>
+              {onSellClick && card.status === 'in-stock' && (
+                <button 
+                  type="button" 
+                  className="glass-button" 
+                  style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', borderColor: 'rgba(16, 185, 129, 0.3)', padding: '0.5rem 1rem' }}
+                  onClick={onSellClick}
+                  disabled={isSubmitting}
+                >
+                  <DollarSign size={18} style={{ marginRight: '0.5rem' }} />
+                  Sell
+                </button>
+              )}
+            </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button type="button" className="glass-button" onClick={onClose} disabled={isSubmitting}>Cancel</button>
               <button type="submit" className="glass-button primary" disabled={isSubmitting}>

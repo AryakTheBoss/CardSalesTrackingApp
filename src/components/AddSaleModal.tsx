@@ -4,9 +4,10 @@ import { useStore } from '../store/useStore';
 
 interface Props {
   onClose: () => void;
+  initialCardId?: string;
 }
 
-export const AddSaleModal = ({ onClose }: Props) => {
+export const AddSaleModal = ({ onClose, initialCardId }: Props) => {
   const inventory = useStore(state => state.inventory) || [];
   const shows = useStore(state => state.shows) || [];
   const addSale = useStore(state => state.addSale);
@@ -46,6 +47,18 @@ export const AddSaleModal = ({ onClose }: Props) => {
       setShowId(matchedShow.id);
     }
   }, [date, shows]);
+
+  useEffect(() => {
+    if (initialCardId && inventory.length > 0) {
+      const card = inventory.find(c => c.id === initialCardId);
+      if (card) {
+        setCardId(card.id);
+        setSearchQuery(card.name);
+        setAvailableQty(card.quantity || 1);
+        setQuantitySold('1');
+      }
+    }
+  }, [initialCardId, inventory]);
 
   const handleSelectCard = (card: any) => {
     setCardId(card.id);
