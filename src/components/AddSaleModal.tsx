@@ -153,7 +153,14 @@ export const AddSaleModal = ({ onClose }: Props) => {
                       onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                       onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                     >
-                      <div className="font-medium">{card.name}</div>
+                      <div className="font-medium" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span>{card.name}</span>
+                        {card.language && (
+                          <span style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>
+                            {card.language === 'English' ? 'EN' : card.language === 'Japanese' ? 'JP' : card.language === 'Chinese' ? 'CN' : card.language === 'Korean' ? 'KR' : card.language}
+                          </span>
+                        )}
+                      </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                         Qty: {card.quantity || 1} • Paid: ${card.pricePaid.toFixed(2)} 
                         {card.type === 'slab' && (card.gradingCompany || card.grade) ? ` • ${card.gradingCompany} ${card.grade}` : ''}

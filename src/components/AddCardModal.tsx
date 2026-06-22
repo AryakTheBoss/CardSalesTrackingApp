@@ -9,6 +9,7 @@ interface Props {
 export const AddCardModal = ({ onClose }: Props) => {
   const addCard = useStore(state => state.addCard);
   const [name, setName] = useState('');
+  const [language, setLanguage] = useState('English');
   const [pricePaid, setPricePaid] = useState('');
   const [isTrade, setIsTrade] = useState(false);
   const [quantity, setQuantity] = useState('1');
@@ -34,6 +35,7 @@ export const AddCardModal = ({ onClose }: Props) => {
         type,
         notes,
         isTrade,
+        language,
         ...(type === 'slab' ? { gradingCompany, grade } : {}),
         ...(type === 'raw' ? { condition } : {})
       });
@@ -73,11 +75,26 @@ export const AddCardModal = ({ onClose }: Props) => {
             <input 
               type="text" 
               className="glass-input" 
-              placeholder="e.g. Base Set Charizard"
+              placeholder="e.g. Charizard Base Set Shadowless"
               value={name}
               onChange={e => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Language</label>
+            <select 
+              className="glass-input"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{ background: '#1e1b4b', appearance: 'auto' }}
+            >
+              <option value="English">English</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Korean">Korean</option>
+            </select>
           </div>
 
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>

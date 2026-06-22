@@ -18,6 +18,7 @@ export interface Card {
   condition?: string;
   quantity?: number;
   isTrade?: boolean;
+  language?: string;
 }
 
 export interface Sale {
@@ -99,11 +100,11 @@ export const useStore = create<AppState>()((set, get) => ({
   setIsDemoMode: (isDemoMode) => {
     if (isDemoMode) {
       // Load dummy data
-      const c1: Card = { id: 'd-c1', name: 'Charizard Base Set', pricePaid: 150, type: 'raw', condition: 'LP', status: 'in-stock', dateAdded: new Date(Date.now() - 864000000).toISOString(), quantity: 1, notes: '' };
-      const c2: Card = { id: 'd-c2', name: 'Lugia 1st Edition', pricePaid: 800, type: 'slab', gradingCompany: 'PSA', grade: '9', status: 'in-stock', dateAdded: new Date(Date.now() - 400000000).toISOString(), quantity: 1, notes: '' };
-      const c3: Card = { id: 'd-c3', name: 'Umbreon VMAX Alt Art', pricePaid: 450, type: 'raw', condition: 'NM', status: 'sold', dateAdded: new Date(Date.now() - 600000000).toISOString(), quantity: 0, notes: '' };
-      const c4: Card = { id: 'd-c4', name: 'Rayquaza Gold Star', pricePaid: 1200, type: 'slab', gradingCompany: 'BGS', grade: '9.5', status: 'sold', dateAdded: new Date(Date.now() - 700000000).toISOString(), quantity: 0, notes: '' };
-      const c5: Card = { id: 'd-c5', name: '151 Booster Bundle', pricePaid: 25, type: 'sealed', status: 'in-stock', dateAdded: new Date(Date.now() - 100000000).toISOString(), quantity: 5, notes: '' };
+      const c1: Card = { id: 'd-c1', name: 'Charizard Base Set', pricePaid: 150, type: 'raw', condition: 'LP', status: 'in-stock', dateAdded: new Date(Date.now() - 864000000).toISOString(), quantity: 1, notes: '', language: 'English' };
+      const c2: Card = { id: 'd-c2', name: 'Lugia 1st Edition', pricePaid: 800, type: 'slab', gradingCompany: 'PSA', grade: '9', status: 'in-stock', dateAdded: new Date(Date.now() - 400000000).toISOString(), quantity: 1, notes: '', language: 'English' };
+      const c3: Card = { id: 'd-c3', name: 'Umbreon VMAX Alt Art', pricePaid: 450, type: 'raw', condition: 'NM', status: 'sold', dateAdded: new Date(Date.now() - 600000000).toISOString(), quantity: 0, notes: '', language: 'Korean' };
+      const c4: Card = { id: 'd-c4', name: 'Rayquaza Gold Star', pricePaid: 1200, type: 'slab', gradingCompany: 'BGS', grade: '9.5', status: 'sold', dateAdded: new Date(Date.now() - 700000000).toISOString(), quantity: 0, notes: '', language: 'Japanese' };
+      const c5: Card = { id: 'd-c5', name: '151 Booster Bundle', pricePaid: 25, type: 'sealed', status: 'in-stock', dateAdded: new Date(Date.now() - 100000000).toISOString(), quantity: 5, notes: '', language: 'Japanese' };
 
       const s1: Sale = { id: 'd-s1', cardId: 'd-c3', soldPrice: 650, date: new Date(Date.now() - 200000000).toISOString(), notes: 'eBay sale' };
       const s2: Sale = { id: 'd-s2', cardId: 'd-c4', soldPrice: 1800, date: new Date(Date.now() - 300000000).toISOString(), notes: 'Discord deal' };

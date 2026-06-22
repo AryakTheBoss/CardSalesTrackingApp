@@ -128,13 +128,18 @@ export const Inventory = () => {
                 </span>
               </div>
               {card.type === 'slab' && (card.gradingCompany || card.grade) && (
-                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                <div style={{ marginBottom: '0.5rem', marginRight: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(139, 92, 246, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
                   {card.gradingCompany} {card.grade}
                 </div>
               )}
               {card.type === 'raw' && card.condition && (
-                <div style={{ marginBottom: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                <div style={{ marginBottom: '0.5rem', marginRight: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--success)' }}>
                   Condition: {card.condition}
+                </div>
+              )}
+              {card.language && (
+                <div style={{ marginBottom: '0.5rem', marginRight: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(59, 130, 246, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: '#60a5fa' }}>
+                  {card.language === 'English' ? 'EN' : card.language === 'Japanese' ? 'JP' : card.language === 'Chinese' ? 'CN' : card.language === 'Korean' ? 'KR' : card.language}
                 </div>
               )}
               <p className="text-xs text-secondary" style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>

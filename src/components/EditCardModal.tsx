@@ -12,6 +12,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
   const deleteCard = useStore(state => state.deleteCard);
   
   const [name, setName] = useState(card.name);
+  const [language, setLanguage] = useState(card.language || 'English');
   const [pricePaid, setPricePaid] = useState(card.pricePaid.toString());
   const [isTrade, setIsTrade] = useState(card.isTrade || false);
   const [quantity, setQuantity] = useState((card.quantity || 1).toString());
@@ -37,6 +38,7 @@ export const EditCardModal = ({ card, onClose }: Props) => {
         type,
         notes,
         isTrade,
+        language,
         cashPaid: null, // clear lingering data
         ...(type === 'slab' ? { gradingCompany, grade, condition: null } : {}),
         ...(type === 'raw' ? { condition, gradingCompany: null, grade: null } : {})
@@ -101,6 +103,21 @@ export const EditCardModal = ({ card, onClose }: Props) => {
               onChange={e => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Language</label>
+            <select 
+              className="glass-input"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{ background: '#1e1b4b', appearance: 'auto' }}
+            >
+              <option value="English">English</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Korean">Korean</option>
+            </select>
           </div>
 
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
