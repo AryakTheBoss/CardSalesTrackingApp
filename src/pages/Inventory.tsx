@@ -28,7 +28,7 @@ export const Inventory = () => {
     if (sortOption === 'price-asc') return a.pricePaid - b.pricePaid;
     return 0;
   });
-  
+
   return (
     <div className="animate-in">
       <div className="view-header flex-row justify-between items-center mb-8" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -136,7 +136,7 @@ export const Inventory = () => {
               )}
               {card.type === 'raw' && card.condition && (
                 <div style={{ marginBottom: '0.5rem', marginRight: '0.5rem', display: 'inline-block', padding: '0.15rem 0.4rem', background: 'rgba(16, 185, 129, 0.2)', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--success)' }}>
-                  Condition: {card.condition}
+                  {card.condition}
                 </div>
               )}
               {card.language && (
@@ -154,9 +154,9 @@ export const Inventory = () => {
 
       {isModalOpen && <AddCardModal onClose={() => setIsModalOpen(false)} />}
       {selectedCard && (
-        <EditCardModal 
-          card={selectedCard} 
-          onClose={() => setSelectedCard(null)} 
+        <EditCardModal
+          card={selectedCard}
+          onClose={() => setSelectedCard(null)}
           onSellClick={() => {
             setSellingCardId(selectedCard.id);
             setSelectedCard(null);
@@ -164,7 +164,7 @@ export const Inventory = () => {
         />
       )}
       {sellingCardId && (
-        <AddSaleModal 
+        <AddSaleModal
           initialCardId={sellingCardId}
           onClose={() => setSellingCardId(null)}
         />

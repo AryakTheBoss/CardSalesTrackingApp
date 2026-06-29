@@ -179,7 +179,7 @@ export const Sales = () => {
                       ${sale.soldPrice.toFixed(2)}
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <span className={totalProfit >= 0 ? 'text-success' : 'text-danger'} style={{ fontWeight: '600' }}>
+                      <span className={totalProfit >= 0 ? 'text-success' : (sale.isTrade ? 'text-secondary' : 'text-danger')} style={{ fontWeight: '600', opacity: (sale.isTrade && totalProfit < 0) ? 0.6 : 1 }}>
                         {totalProfit >= 0 ? '+' : '-'}${Math.abs(totalProfit).toFixed(2)}
                       </span>
                     </td>

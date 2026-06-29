@@ -72,6 +72,9 @@ export const Dashboard = () => {
       const revenueForSale = sale.soldPrice * saleQty;
       const profitForSale = revenueForSale - cogsForSale;
 
+      // Ignore trades with negative profit in dashboard metrics
+      if (sale.isTrade && profitForSale < 0) return;
+
       // All time
       lifetimeRevenue += revenueForSale;
       lifetimeCogs += cogsForSale;
