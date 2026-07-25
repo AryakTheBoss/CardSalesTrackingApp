@@ -147,6 +147,9 @@ export const Inventory = () => {
               <p className="text-xs text-secondary" style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                 {card.notes || 'No notes.'}
               </p>
+              <div style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                Added: {new Date(card.dateAdded).toLocaleDateString()}
+              </div>
             </div>
           ))}
         </div>
