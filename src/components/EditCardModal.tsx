@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, AlertCircle, DollarSign } from 'lucide-react';
+import { X, Trash2, AlertCircle, DollarSign, Search } from 'lucide-react';
 import { useStore, type Card, type CardType } from '../store/useStore';
 
 interface Props {
@@ -24,6 +24,19 @@ export const EditCardModal = ({ card, onClose, onSellClick }: Props) => {
   const [notes, setNotes] = useState(card.notes || '');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSearchComps = () => {
+    const queryParts = [name];
+    if (language && language !== 'English') queryParts.push(language);
+    if (type === 'slab') {
+      if (gradingCompany) queryParts.push(gradingCompany);
+      if (grade) queryParts.push(grade);
+    } else if (type === 'raw') {
+      if (condition) queryParts.push(condition);
+    }
+    const query = encodeURIComponent(queryParts.join(' '));
+    window.open(`https://www.google.com/search?q=${query}`, '_blank');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,8 +273,18 @@ export const EditCardModal = ({ card, onClose, onSellClick }: Props) => {
                 style={{ background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.3)', padding: '0.5rem 1rem' }}
                 onClick={handleDelete}
                 disabled={isSubmitting}
+                title="Delete Card"
               >
                 <Trash2 size={18} />
+              </button>
+              <button 
+                type="button" 
+                className="glass-button" 
+                style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', borderColor: 'rgba(59, 130, 246, 0.3)', padding: '0.5rem 1rem' }}
+                onClick={handleSearchComps}
+                title="Search Comps on Google"
+              >
+                <Search size={18} />
               </button>
               {onSellClick && card.status === 'in-stock' && (
                 <button 
