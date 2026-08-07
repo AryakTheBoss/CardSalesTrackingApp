@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useStore, type Show } from '../store/useStore';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, List } from 'lucide-react';
 import { AddShowModal } from '../components/AddShowModal';
 import { EditShowModal } from '../components/EditShowModal';
+import { ShowCalendar } from '../components/ShowCalendar';
 
 export const Shows = () => {
   const shows = useStore(state => state.shows) || [];
@@ -13,6 +14,7 @@ export const Shows = () => {
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
   const [sortOption, setSortOption] = useState('date-desc');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
 
   const handleDelete = (showId: string) => {
     if (confirm('Are you sure you want to delete this show registration?')) {
@@ -81,6 +83,24 @@ export const Shows = () => {
             <option value="cost-desc">Highest Total Cost</option>
             <option value="cost-asc">Lowest Total Cost</option>
           </select>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.25rem' }}>
+            <button
+              className={`glass-button ${viewMode === 'table' ? 'primary' : ''}`}
+              style={{ padding: '0.5rem', background: viewMode === 'table' ? 'var(--accent-primary)' : 'transparent', border: 'none', borderRadius: '6px' }}
+              onClick={() => setViewMode('table')}
+              title="Table View"
+            >
+              <List size={20} />
+            </button>
+            <button
+              className={`glass-button ${viewMode === 'calendar' ? 'primary' : ''}`}
+              style={{ padding: '0.5rem', background: viewMode === 'calendar' ? 'var(--accent-primary)' : 'transparent', border: 'none', borderRadius: '6px' }}
+              onClick={() => setViewMode('calendar')}
+              title="Calendar View"
+            >
+              <Calendar size={20} />
+            </button>
+          </div>
           {!isGuest && (
             <button className="glass-button primary" onClick={() => setIsAddModalOpen(true)}>
               <Plus size={20} />
@@ -90,12 +110,12 @@ export const Shows = () => {
         </div>
       </div>
 
-      {filteredShows.length === 0 ? (
+      {filteredShows.length === 0 && viewMode === 'table' ? (
         <div className="glass-panel p-12 text-center" style={{ padding: '3rem', textAlign: 'center' }}>
           <p className="text-secondary mb-4">{shows.length === 0 ? "No shows registered yet." : "No matching shows found."}</p>
           {shows.length === 0 && !isGuest && <button className="glass-button" onClick={() => setIsAddModalOpen(true)}>Register for your first show</button>}
         </div>
-      ) : (
+      ) : viewMode === 'table' ? (
         <div className="glass-panel table-responsive-wrapper">
           <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
@@ -167,6 +187,13 @@ export const Shows = () => {
             </tbody>
           </table>
         </div>
+      ) : (
+        <ShowCalendar 
+          shows={shows} 
+          onShowClick={(show) => setSelectedShow(show)}
+          getShowStatus={getShowStatus}
+          getStatusColor={getStatusColor}
+        />
       )}
 
       {isAddModalOpen && <AddShowModal onClose={() => setIsAddModalOpen(false)} />}
