@@ -10,6 +10,7 @@ export const AddShowModal = ({ onClose }: { onClose: () => void }) => {
   const today = new Date();
   const localTodayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const [date, setDate] = useState(localTodayString);
+  const [endDate, setEndDate] = useState('');
   const [tables, setTables] = useState('1');
   const [tableCost, setTableCost] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +26,16 @@ export const AddShowModal = ({ onClose }: { onClose: () => void }) => {
       const [year, month, day] = date.split('-');
       const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
 
+      let localEndDateStr = undefined;
+      if (endDate) {
+        const [eYear, eMonth, eDay] = endDate.split('-');
+        localEndDateStr = new Date(parseInt(eYear), parseInt(eMonth) - 1, parseInt(eDay)).toISOString();
+      }
+
       await addShow({
         name,
         date: localDate.toISOString(),
+        ...(localEndDateStr ? { endDate: localEndDateStr } : {}),
         tables: parseInt(tables),
         tableCost: parseFloat(tableCost)
       });
@@ -76,15 +84,27 @@ export const AddShowModal = ({ onClose }: { onClose: () => void }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Show Date</label>
-            <input
-              type="date"
-              className="glass-input"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              required
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group">
+              <label>Start Date</label>
+              <input
+                type="date"
+                className="glass-input"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>End Date (Optional)</label>
+              <input
+                type="date"
+                className="glass-input"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                min={date}
+              />
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

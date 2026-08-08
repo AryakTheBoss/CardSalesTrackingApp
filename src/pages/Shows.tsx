@@ -34,22 +34,24 @@ export const Shows = () => {
     return 0;
   });
 
-  const getShowStatus = (dateStr: string) => {
-    const showDate = new Date(dateStr);
+  const getShowStatus = (show: Show) => {
+    const startDate = new Date(show.date);
+    const endDate = show.endDate ? new Date(show.endDate) : new Date(show.date);
     const today = new Date();
     
     // Normalize to midnight for accurate day comparison
-    showDate.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
     today.setHours(0, 0, 0, 0);
     
-    if (showDate.getTime() === today.getTime()) return 'Today';
-    if (showDate.getTime() > today.getTime()) return 'Upcoming';
+    if (today.getTime() >= startDate.getTime() && today.getTime() <= endDate.getTime()) return 'Active';
+    if (startDate.getTime() > today.getTime()) return 'Upcoming';
     return 'Completed';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Today': return { bg: 'rgba(234, 179, 8, 0.2)', text: '#facc15' };
+      case 'Active': return { bg: 'rgba(234, 179, 8, 0.2)', text: '#facc15' };
       case 'Upcoming': return { bg: 'rgba(59, 130, 246, 0.2)', text: '#60a5fa' };
       case 'Completed': return { bg: 'rgba(16, 185, 129, 0.2)', text: '#4ade80' };
       default: return { bg: 'rgba(255,255,255,0.1)', text: '#fff' };
@@ -143,17 +145,22 @@ export const Shows = () => {
                     <td style={{ padding: '1rem', fontWeight: '500' }}>{show.name}</td>
                     <td style={{ padding: '1rem' }}>
                       <span style={{ 
-                        background: getStatusColor(getShowStatus(show.date)).bg,
-                        color: getStatusColor(getShowStatus(show.date)).text,
+                        background: getStatusColor(getShowStatus(show)).bg,
+                        color: getStatusColor(getShowStatus(show)).text,
                         padding: '0.25rem 0.75rem',
                         borderRadius: '999px',
                         fontSize: '0.875rem',
                         fontWeight: '600'
                       }}>
-                        {getShowStatus(show.date)}
+                        {getShowStatus(show)}
                       </span>
                     </td>
-                    <td style={{ padding: '1rem' }}>{new Date(show.date).toLocaleDateString()}</td>
+                    <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                      {new Date(show.date).toLocaleDateString()}
+                      {show.endDate && show.endDate !== show.date && (
+                        <> - {new Date(show.endDate).toLocaleDateString()}</>
+                      )}
+                    </td>
                     <td style={{ padding: '1rem' }}>{show.tables}</td>
                     <td style={{ padding: '1rem' }}>${show.tableCost.toFixed(2)}</td>
                     <td style={{ padding: '1rem', fontWeight: '600', color: 'var(--danger)' }}>

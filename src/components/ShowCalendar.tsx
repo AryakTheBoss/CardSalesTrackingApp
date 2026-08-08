@@ -5,7 +5,7 @@ import type { Show } from '../store/useStore';
 interface Props {
   shows: Show[];
   onShowClick: (show: Show) => void;
-  getShowStatus: (dateStr: string) => string;
+  getShowStatus: (show: Show) => string;
   getStatusColor: (status: string) => { bg: string; text: string };
 }
 
@@ -82,11 +82,20 @@ export const ShowCalendar = ({ shows, onShowClick, getShowStatus, getStatusColor
           }
 
           const dayShows = shows.filter(show => {
-            const showDate = new Date(show.date);
-            // Adjust for local time zone matching
-            return showDate.getFullYear() === day.getFullYear() && 
-                   showDate.getMonth() === day.getMonth() && 
-                   showDate.getDate() === day.getDate();
+            const startDate = new Date(show.date);
+            const endDate = show.endDate ? new Date(show.endDate) : new Date(show.date);
+            
+            // Normalize all to midnight for precise comparison
+            const compDay = new Date(day);
+            compDay.setHours(0,0,0,0);
+            
+            const compStart = new Date(startDate);
+            compStart.setHours(0,0,0,0);
+            
+            const compEnd = new Date(endDate);
+            compEnd.setHours(0,0,0,0);
+            
+            return compDay.getTime() >= compStart.getTime() && compDay.getTime() <= compEnd.getTime();
           });
 
           const today = new Date();
@@ -113,7 +122,7 @@ export const ShowCalendar = ({ shows, onShowClick, getShowStatus, getStatusColor
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                 {dayShows.map(show => {
-                  const status = getShowStatus(show.date);
+                  const status = getShowStatus(show);
                   const colors = getStatusColor(status);
                   
                   return (

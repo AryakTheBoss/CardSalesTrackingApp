@@ -36,6 +36,7 @@ export interface Show {
   id: string;
   name: string;
   date: string;
+  endDate?: string;
   tables: number;
   tableCost: number;
 }
