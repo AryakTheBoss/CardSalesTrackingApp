@@ -61,9 +61,11 @@ interface AppState {
   isGuest: boolean;
   isDemoMode: boolean;
   firebaseError: string | null;
+  cashOnHand: number;
   setIsGuest: (isGuest: boolean) => void;
   setIsDemoMode: (isDemo: boolean) => void;
   setFirebaseError: (error: string | null) => void;
+  setCashOnHand: (amount: number) => Promise<void>;
   initializeFirebaseListeners: () => () => void;
   addCard: (card: Omit<Card, 'id' | 'status' | 'dateAdded'>) => Promise<void>;
   updateCard: (id: string, cardData: Partial<Card>) => Promise<void>;
@@ -96,6 +98,7 @@ export const useStore = create<AppState>()((set, get) => ({
   isGuest: false,
   isDemoMode: false,
   firebaseError: null,
+  cashOnHand: 0,
 
   setIsGuest: (isGuest) => set({ isGuest }),
   setIsDemoMode: (isDemoMode) => {
@@ -128,6 +131,13 @@ export const useStore = create<AppState>()((set, get) => ({
     }
   },
   setFirebaseError: (firebaseError) => set({ firebaseError }),
+  setCashOnHand: async (amount) => {
+    if (get().isDemoMode) {
+      set({ cashOnHand: amount });
+      return;
+    }
+    await setDoc(doc(db, 'settings', 'global'), { cashOnHand: amount }, { merge: true });
+  },
 
   initializeFirebaseListeners: () => {
     if (get().isDemoMode) {
@@ -164,11 +174,21 @@ export const useStore = create<AppState>()((set, get) => ({
       set({ shifts, firebaseError: null });
     }, handleSnapshotError);
 
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        set({ cashOnHand: data.cashOnHand || 0, firebaseError: null });
+      } else {
+        set({ cashOnHand: 0 });
+      }
+    }, handleSnapshotError);
+
     return () => {
       unsubInventory();
       unsubSales();
       unsubShows();
       unsubShifts();
+      unsubSettings();
     };
   },
 

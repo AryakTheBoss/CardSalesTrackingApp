@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import { useStore } from '../store/useStore';
-import { TrendingUp, Package, WalletCards, Calendar, BarChart3 } from 'lucide-react';
+import { TrendingUp, Package, WalletCards, Calendar, BarChart3, Pencil, Check, X } from 'lucide-react';
 import { auth } from '../config/firebase';
 
 export const Dashboard = () => {
@@ -9,8 +9,22 @@ export const Dashboard = () => {
   const inventory = useStore(state => state.inventory);
   const shows = useStore(state => state.shows);
   const shifts = useStore(state => state.shifts);
+  const cashOnHand = useStore(state => state.cashOnHand);
+  const setCashOnHand = useStore(state => state.setCashOnHand);
+  
+  const [isEditingCash, setIsEditingCash] = useState(false);
+  const [cashInput, setCashInput] = useState('');
+
   const currentYear = new Date().getFullYear();
   const isMe = auth.currentUser?.uid === 'seb1kmB5PShfhzPdQLyD38SwQbl2';
+
+  const handleSaveCash = async () => {
+    const value = parseFloat(cashInput);
+    if (!isNaN(value)) {
+      await setCashOnHand(value);
+    }
+    setIsEditingCash(false);
+  };
 
   const stats = useMemo(() => {
     // 1. Inventory counts
@@ -190,6 +204,53 @@ export const Dashboard = () => {
             <WalletCards className="text-accent-primary" /> Lifetime Overview
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', borderLeft: '4px solid #10b981' }}>
+              <span className="text-secondary font-medium">Cash on Hand</span>
+              {isEditingCash ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="text-xl font-bold">$</span>
+                  <input
+                    type="number"
+                    value={cashInput}
+                    onChange={(e) => setCashInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveCash()}
+                    autoFocus
+                    style={{ 
+                      background: 'rgba(0,0,0,0.2)', 
+                      border: '1px solid rgba(255,255,255,0.1)', 
+                      borderRadius: '4px', 
+                      color: 'white', 
+                      padding: '0.25rem 0.5rem',
+                      width: '100px',
+                      fontSize: '1.25rem',
+                      fontWeight: 'bold'
+                    }}
+                  />
+                  <button onClick={handleSaveCash} style={{ padding: '0.25rem', color: '#10b981', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                    <Check size={20} />
+                  </button>
+                  <button onClick={() => setIsEditingCash(false)} style={{ padding: '0.25rem', color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="text-xl font-bold text-success">${(cashOnHand || 0).toFixed(2)}</span>
+                  {isMe && (
+                    <button 
+                      onClick={() => {
+                        setCashInput((cashOnHand || 0).toString());
+                        setIsEditingCash(true);
+                      }} 
+                      style={{ padding: '0.25rem', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                      title="Edit Cash on Hand"
+                    >
+                      <Pencil size={16} className="hover:text-white transition-colors" />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
               <span className="text-secondary">Total Sales Revenue</span>
               <span className="text-xl font-bold">${stats.lifetime.revenue.toFixed(2)}</span>
